@@ -25,7 +25,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-@app.get("/ping", tags=["root"], methods=["GET", "HEAD"])
+@app.get("/ping", methods=["GET", "HEAD"], tags=["root"])
 async def ping():
     return {"message": "pong"}
 
