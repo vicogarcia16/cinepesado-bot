@@ -25,4 +25,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+@app.get("/ping")
+async def ping():
+    return {"message": "pong"}
+
 app.include_router(telegram.router)
