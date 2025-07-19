@@ -1,12 +1,14 @@
-### 📌 CinePesado Bot
-Bot de Telegram que recomienda películas usando FastAPI y un modelo LLM vía OpenRouter.
+## 📌 CinePesado Bot
+Bot de Telegram que recomienda películas y conversa de forma natural usando FastAPI y un modelo LLM vía OpenRouter.
 
 #### 🚀 Características
 * Recibe mensajes vía webhook de Telegram.
 
-* Detecta saludos y responde con mensaje inicial.
+* Detecta saludos y responde con un mensaje inicial.
 
-* Envía preguntas al modelo LLM para obtener recomendaciones personalizadas.
+* Interpreta mensajes del usuario para brindar respuestas naturales o recomendaciones de películas.
+
+* Utiliza un modelo LLM (OpenRouter) para generar respuestas contextuales.
 
 * Formatea mensajes con HTML para mejor presentación.
 
