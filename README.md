@@ -10,7 +10,7 @@ Bot de Telegram que recomienda películas usando FastAPI y un modelo LLM vía Op
 
 * Formatea mensajes con HTML para mejor presentación.
 
-* Deploy sencillo en Render o local con Uvicorn/Gunicorn.
+* Deploy sencillo en Render.
 
 #### 📁 Estructura del proyecto
 
@@ -44,6 +44,7 @@ TELEGRAM_TOKEN=telegram_token
 OPENROUTER_API_KEY=openrouter_key
 OPENROUTER_MODEL=modelo
 TELEGRAM_API_URL=https://api.telegram.org/bot
+BASE_URL=URL de render
 ```
 
 #### 🧪 Instalación y Ejecución
