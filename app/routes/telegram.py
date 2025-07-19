@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from app.bot.telegram import send_typing_action, send_message
 from app.bot.handlers import handle_message
+import asyncio
 
 router = APIRouter(prefix="/telegram", 
                    tags=["telegram"], 
@@ -15,9 +16,16 @@ async def telegram_webhook(req: Request):
 
     if not chat_id or not text:
         return {"ok": True}
+    
+    async def keep_typing():
+        while True:
+            await send_typing_action(chat_id)
+            await asyncio.sleep(3)
 
-    await send_typing_action(chat_id)
-    response = await handle_message(text)
+    typing_task = asyncio.create_task(keep_typing())
+    try:
+        response = await handle_message(text)
+    finally:
+        typing_task.cancel()
     await send_message(chat_id, response)
-
     return {"ok": True}
