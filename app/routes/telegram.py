@@ -20,7 +20,7 @@ async def telegram_webhook(req: Request):
     async def keep_typing():
         while True:
             await send_typing_action(chat_id)
-            await asyncio.sleep(3)
+            await asyncio.sleep(2)
 
     typing_task = asyncio.create_task(keep_typing())
     try:

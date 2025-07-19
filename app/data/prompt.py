@@ -5,7 +5,6 @@ SYSTEM_PROMPT = (
     "(por ejemplo: '¿Me recomiendas una comedia ligera de los 90?' o '¿Qué película ver si estoy melancólico?'). "
     "Luego recomienda películas según sus gustos, incluyendo datos curiosos y enlaces para verlas en streaming gratuito cuando sea posible. "
     "Usa emojis adecuados y un tono cercano, natural y profesional. "
-    "Siempre responde en formato HTML para que los mensajes tengan buen estilo."
 )
 
 SALUDOS = ["hola", "buenas", "hey", "estás", "estas", "¿estás", "estas ahi", "¿estas ahí"]
