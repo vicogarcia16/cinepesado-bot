@@ -23,6 +23,6 @@ async def get_llm_response(user_message: str) -> str:
         "max_tokens": 600
     }
 
-    async with httpx.AsyncClient() as client:
-        res = await client.post(url, headers=headers, json=data)
+    async with httpx.AsyncClient(timeout=10) as client:
+        res = await client.post(url, headers=headers, json=data, timeout=10)
         return res.json()["choices"][0]["message"]["content"]
