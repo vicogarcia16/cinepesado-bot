@@ -1,0 +1,35 @@
+# Archivos de entorno
+.env
+.env.*
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Entornos virtuales
+.venv/
+venv/
+ENV/
+env/
+
+# Pipenv
+Pipfile.lock
+
+# pytest
+.cache/
+.pytest_cache/
+
+# VSCode
+.vscode/
+
+# SQLite u otros archivos de base de datos locales
+*.sqlite3
+
+# macOS
+.DS_Store
+
+# IDEs
+.idea/
+
