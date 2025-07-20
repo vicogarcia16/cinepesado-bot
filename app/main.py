@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
         print("¡Listo!")
         
     async with httpx.AsyncClient() as client:
-            await client.post({settings.setwebhook_url})  
+            await client.post(settings.setwebhook_url)  
     yield
     
 app = FastAPI(
