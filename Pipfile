@@ -8,6 +8,8 @@ fastapi = "*"
 uvicorn = "*"
 httpx = "*"
 pydantic-settings = "*"
+sqlalchemy = {extras = ["asyncio"], version = "*"}
+asyncpg = "*"
 
 [dev-packages]
 
