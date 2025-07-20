@@ -3,7 +3,8 @@ from app.core.config import get_settings
 from app.routes import telegram
 from contextlib import asynccontextmanager
 import httpx
-from app.db.database import engine, Base
+from app.db.database import engine
+from app.models.models import Base
 
 
 settings = get_settings()

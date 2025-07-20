@@ -1,7 +1,9 @@
-from app.db.database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, BigInteger, Text, DateTime, func
 from datetime import datetime
+
+class Base(DeclarativeBase):
+    pass
 
 class ChatHistory(Base):
     __tablename__ = "chat_history"
