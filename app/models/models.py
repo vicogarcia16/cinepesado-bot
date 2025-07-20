@@ -13,3 +13,4 @@ class ChatHistory(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, index=True, nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     response: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), nullable=False)
