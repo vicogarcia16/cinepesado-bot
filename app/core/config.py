@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     OPENROUTER_MODEL: str
     TELEGRAM_API_URL: str
     BASE_URL: str
+    DATABASE_URL: str
     API_VERSION: str = '1'
     
     class Config:
