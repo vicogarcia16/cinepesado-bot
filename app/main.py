@@ -16,11 +16,7 @@ async def lifespan(app: FastAPI):
         print("¡Listo!")
         
     async with httpx.AsyncClient() as client:
-            webhook_url = f"{settings.BASE_URL}/api/v1/telegram/webhook/"
-            await client.post(
-                f"{settings.api_telegram}/setWebhook",
-                params={"url": webhook_url}
-            )
+            await client.post({settings.setwebhook_url})  
     yield
     
 app = FastAPI(

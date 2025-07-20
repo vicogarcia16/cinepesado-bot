@@ -19,9 +19,20 @@ class Settings(BaseSettings):
     @property
     def api_prefix(self) -> str:
         return f"/api/v{self.API_VERSION}"
+    
     @property
     def api_telegram(self) -> str:
         return f"{self.TELEGRAM_API_URL}{self.TELEGRAM_TOKEN}"
+    
+    @property
+    def webhook_url(self) -> str:
+        return f"{self.BASE_URL}{self.api_prefix}/telegram/webhook/"
+    
+    @property
+    def setwebhook_url(self) -> str:
+        return f"{self.api_telegram}/setWebhook?url={self.webhook_url}"
+    
+    
     
 @lru_cache
 def get_settings():
