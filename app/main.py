@@ -4,7 +4,7 @@ from app.routes import telegram
 from contextlib import asynccontextmanager
 import httpx
 from app.db.database import engine
-from app.models.models import Base
+from app.models.chat_history import Base
 
 
 settings = get_settings()
@@ -12,9 +12,7 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        print("Conectando y creando tablas...")
         await conn.run_sync(Base.metadata.create_all)
-        print("¡Listo!")
         
     async with httpx.AsyncClient() as client:
             await client.post(settings.setwebhook_url)  
