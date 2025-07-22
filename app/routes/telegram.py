@@ -1,4 +1,3 @@
-import logging
 from fastapi import APIRouter, Request, Depends
 from app.bot.telegram import send_typing_action, send_message
 from app.bot.handlers import generate_bot_response
@@ -7,9 +6,6 @@ from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import asyncio
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/telegram", 
                    tags=["telegram"], 
@@ -31,7 +27,6 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
         return {"ok": True}
 
     full_text = await build_chat_context(db, chat_id, text)
-    logger.info("Full text: %s", full_text)
     async def keep_typing():
         while True:
             await send_typing_action(chat_id)

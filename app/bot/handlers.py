@@ -1,10 +1,6 @@
 from app.services.llm_agent import get_llm_response
 from app.core.utils import is_saludo, parse_message
 from app.data.prompt import SALUDO_INICIAL
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 async def generate_bot_response(text: str) -> str:
     last_line = text.strip().split("\n")[-1]
@@ -14,7 +10,6 @@ async def generate_bot_response(text: str) -> str:
         user_input = last_line
 
     if is_saludo(user_input):
-        logger.info("Detectado como saludo.")
         return SALUDO_INICIAL
 
     raw_response = await get_llm_response(text)

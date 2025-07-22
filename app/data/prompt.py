@@ -10,6 +10,6 @@ SYSTEM_PROMPT = (
     "Usa emojis con moderación para dar calidez, y mantén un tono cercano y profesional."
 )
 
-SALUDOS = ["hola", "buenas", "hey", "estás", "estas", "¿estás", "estas ahi", "¿estas ahí"]
+SALUDOS = ["hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
 
 SALUDO_INICIAL = "¡Hola! 😊 ¿Listo para una recomendación de cine? Solo dime el género o tipo de peli que quieres ver."
