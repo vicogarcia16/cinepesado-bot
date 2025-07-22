@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Request, Depends
 from app.bot.telegram import send_typing_action, send_message
 from app.bot.handlers import generate_bot_response
@@ -27,7 +28,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
         return {"ok": True}
 
     full_text = await build_chat_context(db, chat_id, text)
-    
+    logging.info("Full text: %s", full_text)
     async def keep_typing():
         while True:
             await send_typing_action(chat_id)

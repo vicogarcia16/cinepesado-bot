@@ -1,8 +1,10 @@
 from app.data.prompt import SALUDOS
 import re
+import logging
 
 def is_saludo(text: str) -> bool:
     text = text.lower()
+    logging.info("Text: %s", text)
     for saludo in SALUDOS:
         if re.search(rf"\b{re.escape(saludo)}\b", text):
             return True

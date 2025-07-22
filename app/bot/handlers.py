@@ -1,8 +1,10 @@
 from app.services.llm_agent import get_llm_response
 from app.core.utils import is_saludo, parse_message
 from app.data.prompt import SALUDO_INICIAL
+import logging
 
 async def generate_bot_response(text: str) -> str:
+    logging.info("Received message: %s", text)
     if is_saludo(text):
         return SALUDO_INICIAL
 
