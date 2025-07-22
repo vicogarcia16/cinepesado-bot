@@ -6,15 +6,7 @@ from app.schemas.chat_history import (
     ChatHistoryListResponse,
 )
 from sqlalchemy import select, desc
-
-
-async def create_chat_history(db: AsyncSession, chat_history: ChatHistoryCreate):
-    db_chat_history = ChatHistory(**chat_history.model_dump())
-    db.add(db_chat_history)
-    await db.commit()
-    await db.refresh(db_chat_history)
-    return ChatHistoryResponse(message="Chat history created", data=db_chat_history)
-
+from app.core.utils import clean_text
 
 async def get_last_chats(db: AsyncSession, chat_id: int, limit: int = 5):
     result = await db.execute(
@@ -28,3 +20,18 @@ async def get_last_chats(db: AsyncSession, chat_id: int, limit: int = 5):
         return ChatHistoryListResponse(message="No chat history found", data=[])
 
     return ChatHistoryListResponse(message="Chat history found", data=chat_history)
+
+async def create_chat_history(db: AsyncSession, chat_history: ChatHistoryCreate):
+    db_chat_history = ChatHistory(**chat_history.model_dump())
+    db.add(db_chat_history)
+    await db.commit()
+    await db.refresh(db_chat_history)
+    return ChatHistoryResponse(message="Chat history created", data=db_chat_history)
+
+async def build_chat_context(db: AsyncSession, chat_id: int, user_message: str) -> str:
+    last_chats = await get_last_chats(db, chat_id)
+    context = "\n".join(
+        f"User: {clean_text(chat.message)}\nBot: {clean_text(chat.response)}"
+        for chat in reversed(last_chats.data)
+    )
+    return f"{context}\nUser: {user_message}" if context else f"User: {user_message}"

@@ -12,3 +12,8 @@ def parse_message(text: str) -> str:
 
     return text
 
+def clean_text(html_text: str) -> str:
+    if not html_text:
+        return ""
+    clean = re.sub(r'<.*?>', '', html_text)
+    return clean

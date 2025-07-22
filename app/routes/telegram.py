@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Depends
 from app.bot.telegram import send_typing_action, send_message
-from app.bot.handlers import handle_message
-from app.db.chat_history import create_chat_history, get_last_chats
+from app.bot.handlers import generate_bot_response
+from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,14 +25,8 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
 
     if not chat_id or not text:
         return {"ok": True}
-    
-    last_chats = await get_last_chats(db, chat_id)
-    
-    context = "\n".join(
-        f"User: {chat.message}\nBot: {chat.response}" for chat in reversed(last_chats.data)
-    )
-    
-    full_text = f"{context}\nUser: {text}"
+
+    full_text = build_chat_context(db, chat_id, text)
     
     async def keep_typing():
         while True:
@@ -41,16 +35,15 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
 
     typing_task = asyncio.create_task(keep_typing())
     try:
-        response = await handle_message(full_text)
+        response = await generate_bot_response(full_text)
     finally:
         typing_task.cancel()
-        
-    history_data = ChatHistoryCreate(
-        chat_id=chat_id,
-        message=text,
-        response=response
-    )
 
-    await create_chat_history(db, history_data)
+    await create_chat_history(db, 
+                              ChatHistoryCreate(
+                                  chat_id=chat_id,
+                                  message=text, 
+                                  response=response
+                              ))
     await send_message(chat_id, response)
     return {"ok": True}
