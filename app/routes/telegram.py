@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request, Depends
+from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
 from app.bot.handlers import generate_bot_response
+from app.core.utils import validate_message
 from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import get_db
@@ -18,13 +20,12 @@ async def get_history(chat_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.post("/webhook/")
 async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
-    body = await req.json()
+    try:
+        body = await req.json()
+    except Exception:
+        raise JsonInvalidException()
     message = body.get("message", {})
-    chat_id = message.get("chat", {}).get("id")
-    text = message.get("text", "").strip().lower()
-
-    if not chat_id or not text:
-        return {"ok": True}
+    chat_id, text = validate_message(message)
 
     full_text = await build_chat_context(db, chat_id, text)
     async def keep_typing():

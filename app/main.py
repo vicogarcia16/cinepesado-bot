@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.core.config import get_settings
+from app.core.exception_handlers import register_exception_handlers
 from app.routes import telegram
 from contextlib import asynccontextmanager
 import httpx
@@ -31,4 +32,5 @@ app = FastAPI(
 async def ping():
     return {"message": "pong"}
 
+register_exception_handlers(app)
 app.include_router(telegram.router, prefix=settings.api_prefix)
