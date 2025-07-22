@@ -8,6 +8,9 @@ from app.db.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import asyncio
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/telegram", 
                    tags=["telegram"], 
                    responses={404: {"description": "Not found"}})
@@ -28,7 +31,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
         return {"ok": True}
 
     full_text = await build_chat_context(db, chat_id, text)
-    logging.info("Full text: %s", full_text)
+    logger.info("Full text: %s", full_text)
     async def keep_typing():
         while True:
             await send_typing_action(chat_id)

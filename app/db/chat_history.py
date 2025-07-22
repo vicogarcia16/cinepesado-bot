@@ -9,6 +9,9 @@ from app.schemas.chat_history import (
 from sqlalchemy import select, desc
 from app.core.utils import clean_text
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 async def get_last_chats(db: AsyncSession, chat_id: int, limit: int = 5):
     result = await db.execute(
         select(ChatHistory)
@@ -35,5 +38,5 @@ async def build_chat_context(db: AsyncSession, chat_id: int, user_message: str) 
         f"User: {clean_text(chat.message)}\nBot: {clean_text(chat.response)}"
         for chat in reversed(last_chats.data)
     )
-    logging.info("Chat context: %s", context)
+    logger.info("Chat context: %s", context)
     return f"{context}\nUser: {user_message}" if context else f"User: {user_message}"
