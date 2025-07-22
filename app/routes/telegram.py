@@ -27,6 +27,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
         return {"ok": True}
 
     full_text = await build_chat_context(db, chat_id, text)
+    print('full_text', full_text)
     
     async def keep_typing():
         while True:
@@ -36,6 +37,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
     typing_task = asyncio.create_task(keep_typing())
     try:
         response = await generate_bot_response(full_text)
+        print('response', response)
     finally:
         typing_task.cancel()
 

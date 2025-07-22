@@ -3,6 +3,7 @@ from app.core.utils import is_saludo, parse_message
 from app.data.prompt import SALUDO_INICIAL
 
 async def generate_bot_response(text: str) -> str:
+    print("texto recibido", text)
     if is_saludo(text):
         return SALUDO_INICIAL
 
