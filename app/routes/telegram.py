@@ -11,6 +11,11 @@ router = APIRouter(prefix="/telegram",
                    tags=["telegram"], 
                    responses={404: {"description": "Not found"}})
 
+
+@router.get("/history/{chat_id}", response_model=ChatHistoryListResponse)
+async def get_history(chat_id: int, db: AsyncSession = Depends(get_db)):
+    return await get_last_chats(db, chat_id)
+
 @router.post("/webhook/")
 async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
     body = await req.json()
@@ -21,6 +26,14 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
     if not chat_id or not text:
         return {"ok": True}
     
+    last_chats = await get_last_chats(db, chat_id)
+    
+    context = "\n".join(
+        f"User: {chat.message}\nBot: {chat.response}" for chat in reversed(last_chats.data)
+    )
+    
+    full_text = f"{context}\nUser: {text}"
+    
     async def keep_typing():
         while True:
             await send_typing_action(chat_id)
@@ -28,7 +41,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
 
     typing_task = asyncio.create_task(keep_typing())
     try:
-        response = await handle_message(text)
+        response = await handle_message(full_text)
     finally:
         typing_task.cancel()
         
@@ -41,7 +54,3 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
     await create_chat_history(db, history_data)
     await send_message(chat_id, response)
     return {"ok": True}
-
-@router.get("/history/{chat_id}", response_model=ChatHistoryListResponse)
-async def get_history(chat_id: int, db: AsyncSession = Depends(get_db)):
-    return await get_last_chats(db, chat_id)
