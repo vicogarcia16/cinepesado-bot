@@ -26,7 +26,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
     if not chat_id or not text:
         return {"ok": True}
 
-    full_text = build_chat_context(db, chat_id, text)
+    full_text = await build_chat_context(db, chat_id, text)
     
     async def keep_typing():
         while True:
