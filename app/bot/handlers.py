@@ -7,16 +7,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def generate_bot_response(text: str) -> str:
-    logger.info(f"Texto recibido: {text}")
+    last_line = text.strip().split("\n")[-1]
+    if last_line.lower().startswith("user: "):
+        user_input = last_line[6:].strip()
+    else:
+        user_input = last_line
 
-    if is_saludo(text):
-        logger.info("Detectado como saludo")
+    if is_saludo(user_input):
+        logger.info("Detectado como saludo.")
         return SALUDO_INICIAL
 
     raw_response = await get_llm_response(text)
-    logger.info(f"Respuesta cruda del modelo: {raw_response}")
-
-    parsed = parse_message(raw_response)
-    logger.info(f"Respuesta parseada: {parsed}")
-
-    return parsed
+    return parse_message(raw_response)
