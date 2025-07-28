@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     TELEGRAM_API_URL: str
     BASE_URL: str
     DATABASE_URL: str
+    TMDB_API_KEY: str
     API_VERSION: str = '1'
     
     class Config:
