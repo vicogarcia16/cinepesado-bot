@@ -48,7 +48,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
             
             typing_task = asyncio.create_task(send_typing_action(chat_id))
             try:
-                response_text, reply_markup = await generate_bot_response(full_text, chat_id)
+                response_text, reply_markup = await generate_bot_response(full_text)
             finally:
                 typing_task.cancel()
             
@@ -82,7 +82,7 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
 
         typing_task = asyncio.create_task(keep_typing())
         try:
-            response_text, reply_markup = await generate_bot_response(full_text, chat_id)
+            response_text, reply_markup = await generate_bot_response(full_text)
         finally:
             typing_task.cancel()
 
