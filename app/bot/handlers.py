@@ -50,7 +50,7 @@ async def generate_bot_response(text: str) -> tuple[str, dict | None]:
 
     inline_keyboard = None
     if all_buttons:
-        grouped_movie_buttons = [all_buttons[i:i + 2] for i in range(0, len(all_buttons), 2)]
+        grouped_movie_buttons = [[button] for button in all_buttons]
         inline_keyboard = {"inline_keyboard": grouped_movie_buttons}
 
     return parsed_response, inline_keyboard
