@@ -10,6 +10,7 @@ httpx = "*"
 pydantic-settings = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
 asyncpg = "*"
+youtube-search-python = "*"
 
 [dev-packages]
 
