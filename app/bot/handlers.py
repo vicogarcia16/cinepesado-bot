@@ -4,7 +4,7 @@ from app.data.prompt import SALUDO_INICIAL
 from app.services.tmdb_service import search_movie, get_movie_details
 import re
 
-async def generate_bot_response(text: str) -> tuple[str, dict | None]:
+async def generate_bot_response(text: str, chat_id: int) -> tuple[str, dict | None]:
     last_line = text.strip().split("\n")[-1]
     if last_line.lower().startswith("user: "):
         user_input = last_line[6:].strip()
