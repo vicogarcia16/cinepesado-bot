@@ -12,7 +12,7 @@ async def search_movie(title: str):
             params={
                 "api_key": settings.TMDB_API_KEY,
                 "query": title,
-                "language": "es-ES"
+                "language": "es-MX"
             }
         )
         response.raise_for_status()
@@ -25,7 +25,7 @@ async def get_movie_details(movie_id: int):
             f"https://api.themoviedb.org/3/movie/{movie_id}",
             params={
                 "api_key": settings.TMDB_API_KEY,
-                "language": "es-ES",
+                "language": "es-MX",
                 "append_to_response": "videos,watch/providers"
             }
         )
