@@ -75,5 +75,6 @@ async def get_llm_response(user_message: str) -> str:
         final_response = re.sub(re.escape(full_tag), f"{full_tag} {trailer_info}", final_response, 1)
 
     final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "")
+    final_response = final_response.replace("(Tráiler no disponible)", "")
 
     return final_response
