@@ -72,9 +72,7 @@ async def get_llm_response(user_message: str) -> str:
         
         trailer_info = trailer_link if trailer_link else "(Tráiler no disponible)"
         
-        debug_info = f" [DEBUG: Título: {movie_title}, Año: {movie_year}, Tráiler: {trailer_info}]"
-        
-        final_response = re.sub(re.escape(full_tag), f"{full_tag} {trailer_info}{debug_info}", final_response, 1)
+        final_response = re.sub(re.escape(full_tag), f"{full_tag} {trailer_info}", final_response, 1)
 
     final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "")
 
