@@ -70,7 +70,7 @@ async def get_llm_response(user_message: str) -> str:
     for movie_title, movie_year in matches:
         trailer_link = await search_youtube_trailer(movie_title, movie_year)
         
-        placeholder_pattern = re.escape(f"[TÍTULO: {movie_title}, AÑO: {movie_year}]") + r'\[TRAILER_PLACEHOLDER\]'
+        placeholder_pattern = re.escape(f"[TÍTULO: {movie_title}, AÑO: {movie_year}]") + r'\s*[TRAILER_PLACEHOLDER]'
         
         if trailer_link:
             final_response = re.sub(placeholder_pattern, f"[TÍTULO: {movie_title}, AÑO: {movie_year}] {trailer_link}", final_response, 1)
