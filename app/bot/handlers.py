@@ -48,9 +48,14 @@ async def generate_bot_response(text: str) -> tuple[str, dict | None]:
         except Exception as e:
             print(f"Error al obtener datos de TMDB para '{movie_title}': {e}")
 
+    final_buttons_row = []
+    final_buttons_row.append({"text": "Recomiéndame otra", "callback_data": "recommend_another"})
+    final_buttons_row.append({"text": "Ver historial", "callback_data": "view_history"})
+
     inline_keyboard = None
-    if all_buttons:
+    if all_buttons or final_buttons_row:
         grouped_movie_buttons = [all_buttons[i:i + 2] for i in range(0, len(all_buttons), 2)]
-        inline_keyboard = {"inline_keyboard": grouped_movie_buttons}
+        all_rows = grouped_movie_buttons + [final_buttons_row]
+        inline_keyboard = {"inline_keyboard": all_rows}
 
     return parsed_response, inline_keyboard
