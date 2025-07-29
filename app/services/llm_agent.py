@@ -14,44 +14,51 @@ TMDB_API_KEY = settings.TMDB_API_KEY
 
 tmdb.API_KEY = TMDB_API_KEY
 
+async def _search_movie_by_year_and_title(search_client, movie_title: str, movie_year: str):
+    """Helper to search for a movie by title and year, prioritizing exact year match."""
+    response = await asyncio.to_thread(search_client.movie, query=movie_title, year=movie_year)
+    
+    best_match = None
+    if response['results']:
+        for movie_result in response['results']:
+            if str(movie_result.get('release_date', ''))[:4] == movie_year:
+                best_match = movie_result
+                break
+        if not best_match:
+            best_match = response['results'][0]
+
+    if not best_match:
+        response = await asyncio.to_thread(search_client.movie, query=movie_title)
+        if response['results']:
+            best_match = response['results'][0]
+            min_year_diff = abs(int(movie_year) - int(str(best_match.get('release_date', ''))[:4] or 0))
+
+            for movie_result in response['results']:
+                current_year = int(str(movie_result.get('release_date', ''))[:4] or 0)
+                if current_year:
+                    year_diff = abs(int(movie_year) - current_year)
+                    if year_diff < min_year_diff:
+                        min_year_diff = year_diff
+                        best_match = movie_result
+    return best_match
+
+async def _get_trailer_link_from_movie_id(movie_id: int) -> str | None:
+    """Helper to get a YouTube trailer link from a movie ID."""
+    movie = tmdb.Movies(movie_id)
+    videos = await asyncio.to_thread(movie.videos)
+    
+    if videos and videos.get('results'):
+        for video in videos['results']:
+            if video['site'] == 'YouTube' and video['type'] == 'Trailer':
+                return f"https://www.youtube.com/watch?v={video['key']}"
+    return None
+
 async def search_youtube_trailer(movie_title: str, movie_year: str) -> str | None:
     search = tmdb.Search()
     try:
-        response = await asyncio.to_thread(search.movie, query=movie_title, year=movie_year)
-        
-        best_match = None
-        if response['results']:
-            for movie_result in response['results']:
-                if str(movie_result.get('release_date', ''))[:4] == movie_year:
-                    best_match = movie_result
-                    break
-            if not best_match:
-                best_match = response['results'][0]
-
-        if not best_match:
-            response = await asyncio.to_thread(search.movie, query=movie_title)
-            if response['results']:
-                best_match = response['results'][0]
-                min_year_diff = abs(int(movie_year) - int(str(best_match.get('release_date', ''))[:4] or 0))
-
-                for movie_result in response['results']:
-                    current_year = int(str(movie_result.get('release_date', ''))[:4] or 0)
-                    if current_year:
-                        year_diff = abs(int(movie_year) - current_year)
-                        if year_diff < min_year_diff:
-                            min_year_diff = year_diff
-                            best_match = movie_result
-
+        best_match = await _search_movie_by_year_and_title(search, movie_title, movie_year)
         if best_match:
-            movie_id = best_match['id']
-            movie = tmdb.Movies(movie_id)
-            
-            videos = await asyncio.to_thread(movie.videos)
-            
-            if videos and videos.get('results'):
-                for video in videos['results']:
-                    if video['site'] == 'YouTube' and video['type'] == 'Trailer':
-                        return f"https://www.youtube.com/watch?v={video['key']}"
+            return await _get_trailer_link_from_movie_id(best_match['id'])
     except Exception as e:
         raise YouTubeSearchError(detail=f"Failed to search TMDb for trailer: {e}")
     return None
