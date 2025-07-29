@@ -6,6 +6,7 @@ from googleapiclient.errors import HttpError
 from app.core.config import get_settings
 from app.data.prompt import SYSTEM_PROMPT
 from app.core.exceptions import LLMApiError, YouTubeSearchError
+import json # Importar el módulo json
 
 settings = get_settings()
 
@@ -56,8 +57,11 @@ async def get_llm_response(user_message: str) -> str:
             res = await client.post(url, headers=headers, json=data)
             res.raise_for_status()
             llm_response_content = res.json()["choices"][0]["message"]["content"]
-        except (httpx.HTTPStatusError, KeyError, IndexError) as e:
-            raise LLMApiError(detail="Failed to get a valid response from the LLM API.")
+        except (httpx.HTTPStatusError, KeyError, IndexError, json.decoder.JSONDecodeError) as e:
+            error_detail = f"Failed to get a valid response from the LLM API. Error: {e}"
+            if isinstance(e, json.decoder.JSONDecodeError) and hasattr(res, 'text'):
+                error_detail += f" Raw response: {res.text}"
+            raise LLMApiError(detail=error_detail)
 
     match = re.search(r'\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\]', llm_response_content)
 
