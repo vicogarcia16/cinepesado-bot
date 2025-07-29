@@ -10,7 +10,8 @@ httpx = "*"
 pydantic-settings = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
 asyncpg = "*"
-youtube-search-python = "*"
+google-api-python-client = "*"
+starlette = "==0.47.1"
 
 [dev-packages]
 

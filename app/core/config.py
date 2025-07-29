@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     BASE_URL: str
     DATABASE_URL: str
     API_VERSION: str = '1'
+    YOUTUBE_API_KEY: str
     
     class Config:
         env_file = ".env"

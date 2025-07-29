@@ -1,6 +1,8 @@
 import httpx
 import re
-from youtubesearchpython import VideosSearchAsync
+import asyncio
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 from app.core.config import get_settings
 from app.data.prompt import SYSTEM_PROMPT
 from app.core.exceptions import LLMApiError, YouTubeSearchError
@@ -9,16 +11,28 @@ settings = get_settings()
 
 OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
+YOUTUBE_API_KEY = settings.YOUTUBE_API_KEY
+
+# Inicializar el cliente de la API de YouTube una vez
+youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
 
 async def search_youtube_trailer(movie_title: str, movie_year: str) -> str | None:
     query = f'{movie_title} {movie_year} trailer español latino'
     try:
-        videos_search = VideosSearchAsync(query, limit=1)
-        results = await videos_search.next()
-        if results and results['result']:
-            return results['result'][0]['link']
+        response = await asyncio.to_thread(youtube.search().list, 
+            q=query,
+            type='video',
+            part='id,snippet',
+            maxResults=1
+        )
+        
+        if response and response.get('items'):
+            video_id = response['items'][0]['id']['videoId']
+            return f"https://www.youtube.com/watch?v={video_id}"
+    except HttpError as e:
+        raise YouTubeSearchError(detail=f"YouTube API error: {e}")
     except Exception as e:
-        raise YouTubeSearchError(detail=f"Failed to search YouTube for: {query}")
+        raise YouTubeSearchError(detail=f"Failed to search YouTube for: {query}. Error: {e}")
     return None
 
 async def get_llm_response(user_message: str) -> str:
