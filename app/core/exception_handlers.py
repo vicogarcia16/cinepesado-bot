@@ -13,12 +13,10 @@ def register_exception_handlers(app: FastAPI):
 
     @app.exception_handler(LLMApiError)
     async def llm_api_error_handler(request: Request, exc: LLMApiError):
-        # Aquí podrías añadir un log del error si quisieras
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
     @app.exception_handler(YouTubeSearchError)
     async def youtube_search_error_handler(request: Request, exc: YouTubeSearchError):
-        # Aquí podrías añadir un log del error si quisieras
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
     @app.exception_handler(HTTPException)

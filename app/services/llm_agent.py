@@ -17,18 +17,15 @@ tmdb.API_KEY = TMDB_API_KEY
 async def search_youtube_trailer(movie_title: str, movie_year: str) -> str | None:
     search = tmdb.Search()
     try:
-        # Search for the movie
         response = await asyncio.to_thread(search.movie, query=movie_title, year=movie_year)
         
         if not response['results']:
-            # If no exact match with year, try without year
             response = await asyncio.to_thread(search.movie, query=movie_title)
 
         if response['results']:
             movie_id = response['results'][0]['id']
             movie = tmdb.Movies(movie_id)
             
-            # Get videos (trailers) for the movie
             videos = await asyncio.to_thread(movie.videos)
             
             if videos and videos.get('results'):
@@ -66,7 +63,6 @@ async def get_llm_response(user_message: str) -> str:
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-    # Extraer todos los títulos y años de la respuesta del LLM
     matches = re.findall(r'\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\]', llm_response_content)
 
     final_response = llm_response_content
@@ -74,8 +70,6 @@ async def get_llm_response(user_message: str) -> str:
     for movie_title, movie_year in matches:
         trailer_link = await search_youtube_trailer(movie_title, movie_year)
         
-        # Construir el patrón de reemplazo específico para esta película
-        # Esto asegura que reemplazamos el placeholder correcto para cada película
         placeholder_pattern = re.escape(f"[TÍTULO: {movie_title}, AÑO: {movie_year}]") + r'\[TRAILER_PLACEHOLDER\]'
         
         if trailer_link:
@@ -83,7 +77,6 @@ async def get_llm_response(user_message: str) -> str:
         else:
             final_response = re.sub(placeholder_pattern, f"[TÍTULO: {movie_title}, AÑO: {movie_year}] (Tráiler no disponible)", final_response, 1)
             
-    # Eliminar cualquier TRAILER_PLACEHOLDER remanente si el LLM no lo asoció con un título/año
     final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "")
 
     return final_response
