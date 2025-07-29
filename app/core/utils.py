@@ -9,6 +9,7 @@ def is_saludo(text: str) -> bool:
 def parse_message(text: str) -> str:
     if not text:
         return ""
+    text = re.sub(r"^### (.+)$", r"<b>\1</b>", text, flags=re.MULTILINE)
     text = re.sub(r"```(.*?)```", r"<pre>\1</pre>", text, flags=re.DOTALL)
     text = re.sub(r"`([^`\n]+?)`", r"<code>\1</code>", text)
     text = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", text)
