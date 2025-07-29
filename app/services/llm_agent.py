@@ -1,6 +1,6 @@
 import httpx
 import re
-from youtubesearchpython import VideosSearch
+from youtubesearchpython.extras import VideosSearchAsync
 from app.core.config import get_settings
 from app.data.prompt import SYSTEM_PROMPT
 from app.core.exceptions import LLMApiError, YouTubeSearchError
@@ -10,11 +10,11 @@ settings = get_settings()
 OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
 
-def search_youtube_trailer(movie_title: str, movie_year: str) -> str | None:
+async def search_youtube_trailer(movie_title: str, movie_year: str) -> str | None:
     query = f'{movie_title} {movie_year} trailer español latino'
     try:
-        videos_search = VideosSearch(query, limit=1)
-        results = videos_search.result()
+        videos_search = VideosSearchAsync(query, limit=1)
+        results = await videos_search.next()
         if results and results['result']:
             return results['result'][0]['link']
     except Exception as e:
@@ -54,7 +54,7 @@ async def get_llm_response(user_message: str) -> str:
     
     final_response = re.sub(r'\[TÍTULO:.*?\]', '', llm_response_content).strip()
 
-    trailer_link = search_youtube_trailer(movie_title, movie_year)
+    trailer_link = await search_youtube_trailer(movie_title, movie_year)
 
     if trailer_link:
         final_response = final_response.replace("[TRAILER_PLACEHOLDER]", trailer_link)
