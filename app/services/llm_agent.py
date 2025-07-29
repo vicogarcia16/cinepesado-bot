@@ -66,26 +66,24 @@ async def get_llm_response(user_message: str) -> str:
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-    # Extraer título y año de la respuesta del LLM
-    match = re.search(r'\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\]', llm_response_content)
+    # Extraer todos los títulos y años de la respuesta del LLM
+    matches = re.findall(r'\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\]', llm_response_content)
 
-    if not match:
-        # Si no se encuentra el patrón, devolvemos la respuesta del LLM tal cual
-        # y eliminamos cualquier TRAILER_PLACEHOLDER que el LLM haya puesto
-        return llm_response_content.replace("[TRAILER_PLACEHOLDER]", "")
+    final_response = llm_response_content
 
-    movie_title, movie_year = match.groups()
-    
-    # Limpiar la etiqueta de título y año de la respuesta
-    final_response = re.sub(r'\[TÍTULO:.*?\]', '', llm_response_content).strip()
-
-    # Buscar el tráiler en TMDb
-    trailer_link = await search_youtube_trailer(movie_title, movie_year)
-
-    # Reemplazar el placeholder con el enlace real o eliminarlo si no se encuentra
-    if trailer_link:
-        final_response = final_response.replace("[TRAILER_PLACEHOLDER]", trailer_link)
-    else:
-        final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "(Tráiler no disponible)")
+    for movie_title, movie_year in matches:
+        trailer_link = await search_youtube_trailer(movie_title, movie_year)
+        
+        # Construir el patrón de reemplazo específico para esta película
+        # Esto asegura que reemplazamos el placeholder correcto para cada película
+        placeholder_pattern = re.escape(f"[TÍTULO: {movie_title}, AÑO: {movie_year}]") + r'\[TRAILER_PLACEHOLDER\]'
+        
+        if trailer_link:
+            final_response = re.sub(placeholder_pattern, f"[TÍTULO: {movie_title}, AÑO: {movie_year}] {trailer_link}", final_response, 1)
+        else:
+            final_response = re.sub(placeholder_pattern, f"[TÍTULO: {movie_title}, AÑO: {movie_year}] (Tráiler no disponible)", final_response, 1)
+            
+    # Eliminar cualquier TRAILER_PLACEHOLDER remanente si el LLM no lo asoció con un título/año
+    final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "")
 
     return final_response
