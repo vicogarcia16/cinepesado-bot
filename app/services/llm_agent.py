@@ -52,11 +52,13 @@ async def get_llm_response(user_message: str) -> str:
 
     movie_title, movie_year = match.groups()
     
-    clean_response = re.sub(r'\[TÍTULO:.*?\]', '', llm_response_content).strip()
+    final_response = re.sub(r'\[TÍTULO:.*?\]', '', llm_response_content).strip()
 
     trailer_link = search_youtube_trailer(movie_title, movie_year)
 
     if trailer_link:
-        return f"{clean_response}\n\nAquí tienes el tráiler: {trailer_link}"
+        final_response = final_response.replace("[TRAILER_PLACEHOLDER]", trailer_link)
     else:
-        return clean_response
+        final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "(Tráiler no disponible)")
+
+    return final_response
