@@ -63,20 +63,17 @@ async def get_llm_response(user_message: str) -> str:
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-    matches = re.findall(r'\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\]', llm_response_content)
+    matches = re.findall(r'(\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\])', llm_response_content)
 
     final_response = llm_response_content
 
-    for movie_title, movie_year in matches:
+    for full_tag, movie_title, movie_year in matches:
         trailer_link = await search_youtube_trailer(movie_title, movie_year)
         
-        placeholder_pattern = re.escape(f"[TÍTULO: {movie_title}, AÑO: {movie_year}]") + r'\s*[TRAILER_PLACEHOLDER]'
+        trailer_info = trailer_link if trailer_link else "(Tráiler no disponible)"
         
-        if trailer_link:
-            final_response = re.sub(placeholder_pattern, f"[TÍTULO: {movie_title}, AÑO: {movie_year}] {trailer_link}", final_response, 1)
-        else:
-            final_response = re.sub(placeholder_pattern, f"[TÍTULO: {movie_title}, AÑO: {movie_year}] (Tráiler no disponible)", final_response, 1)
-            
+        final_response = re.sub(re.escape(full_tag), f"{full_tag} {trailer_info}", final_response, 1)
+     
     final_response = final_response.replace("[TRAILER_PLACEHOLDER]", "")
 
     return final_response
