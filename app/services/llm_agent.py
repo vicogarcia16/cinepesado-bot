@@ -1,6 +1,6 @@
 import httpx
 import re
-from youtubesearchpython.extras import VideosSearchAsync
+from youtubesearchpython import VideosSearchAsync
 from app.core.config import get_settings
 from app.data.prompt import SYSTEM_PROMPT
 from app.core.exceptions import LLMApiError, YouTubeSearchError
