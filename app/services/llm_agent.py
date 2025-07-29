@@ -20,7 +20,7 @@ async def get_llm_response(user_message: str) -> str:
             {"role": "user", "content": user_message}
         ],
         "temperature": 0.7,
-        "max_tokens": 600
+        "max_tokens": 1500
     }
 
     async with httpx.AsyncClient(timeout=30) as client:
