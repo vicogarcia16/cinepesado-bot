@@ -42,7 +42,33 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
         callback_data = callback_query["data"]
         callback_query_id = callback_query["id"]
 
-        await answer_callback_query(callback_query_id, text="Acción no reconocida.")
+        if callback_data == "recommend_another":
+            await answer_callback_query(callback_query_id)
+            full_text = await build_chat_context(db, chat_id, "Recomiéndame otra película")
+            
+            typing_task = asyncio.create_task(send_typing_action(chat_id))
+            try:
+                response_text, reply_markup = await generate_bot_response(full_text)
+            finally:
+                typing_task.cancel()
+            
+            await create_chat_history(db, 
+                                      ChatHistoryCreate(
+                                          chat_id=chat_id,
+                                          message="Recomiéndame otra película", 
+                                          response=response_text
+                                      ))
+            await send_message(chat_id, response_text, reply_markup=reply_markup)
+
+        elif callback_data == "view_history":
+            await answer_callback_query(callback_query_id, text="Cargando historial...")
+            history = await get_last_chats(db, chat_id)
+            history_text = "\n".join([f"User: {h.message}\nBot: {h.response}" for h in history.history])
+            if not history_text:
+                history_text = "Tu historial está vacío."
+            await send_message(chat_id, f"Tu historial de chat:\n{history_text}")
+        else:
+            await answer_callback_query(callback_query_id, text="Acción no reconocida.")
 
     elif "message" in body:
         message = body.get("message", {})
