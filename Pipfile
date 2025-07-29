@@ -10,7 +10,6 @@ httpx = "*"
 pydantic-settings = "*"
 sqlalchemy = {extras = ["asyncio"], version = "*"}
 asyncpg = "*"
-themoviedb = "*"
 
 [dev-packages]
 
