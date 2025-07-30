@@ -42,26 +42,32 @@ async def _search_movie_by_year_and_title(search_client, movie_title: str, movie
                         best_match = movie_result
     return best_match
 
-async def _get_trailer_link_from_movie_id(movie_id: int) -> str | None:
-    """Helper to get a YouTube trailer link from a movie ID."""
-    movie = tmdb.Movies(movie_id)
-    videos = await asyncio.to_thread(movie.videos)
-    
-    if videos and videos.get('results'):
-        for video in videos['results']:
-            if video['site'] == 'YouTube' and video['type'] == 'Trailer':
-                return f"https://www.youtube.com/watch?v={video['key']}"
-    return None
-
-async def search_youtube_trailer(movie_title: str, movie_year: str) -> str | None:
+async def search_movie_data(movie_title: str, movie_year: str) -> dict:
+    """Searches for a movie and returns its trailer link and poster URL."""
     search = tmdb.Search()
+    result = {
+        "trailer_link": None,
+        "poster_url": None
+    }
     try:
         best_match = await _search_movie_by_year_and_title(search, movie_title, movie_year)
         if best_match:
-            return await _get_trailer_link_from_movie_id(best_match['id'])
+            movie_id = best_match['id']
+            movie = tmdb.Movies(movie_id)
+            details = await asyncio.to_thread(movie.info, append_to_response='videos')
+
+            if details and details.get('poster_path'):
+                result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"
+
+            videos = details.get('videos', {}).get('results', [])
+            for video in videos:
+                if video['site'] == 'YouTube' and video['type'] == 'Trailer':
+                    result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
+                    break
     except Exception as e:
-        raise YouTubeSearchError(detail=f"Failed to search TMDb for trailer: {e}")
-    return None
+        raise YouTubeSearchError(detail=f"Failed to search TMDb for movie data: {e}")
+
+    return result
 
 async def get_llm_response(user_message: str) -> str:
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -91,14 +97,17 @@ async def get_llm_response(user_message: str) -> str:
             raise LLMApiError(detail=error_detail)
 
     matches = re.findall(r'(\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\])', llm_response_content)
-
+    
     final_response = llm_response_content
 
     for full_tag, movie_title, movie_year in matches:
-        trailer_link = await search_youtube_trailer(movie_title, movie_year)
+        movie_data = await search_movie_data(movie_title, movie_year)
+        trailer_link = movie_data.get("trailer_link")
+        poster_url = movie_data.get("poster_url")
         
         trailer_info = f"Tráiler: {trailer_link}" if trailer_link else "Tráiler: (No encontrado en TMDb)"
+        poster_info = f"Poster: {poster_url}" if poster_url else "Poster: (No encontrado)"
         
-        final_response = re.sub(re.escape(full_tag), f"{full_tag}\n{trailer_info}", final_response, 1)
+        final_response = re.sub(re.escape(full_tag), f"{full_tag}\n{trailer_info}\n{poster_info}", final_response, 1)
 
     return final_response
