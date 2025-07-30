@@ -107,7 +107,7 @@ async def get_llm_response(user_message: str) -> str:
         
         trailer_info = f"Tráiler: {trailer_link}" if trailer_link else "Tráiler: (No encontrado en TMDb)"
         poster_info = f"Poster: {poster_url}" if poster_url else "Poster: (No encontrado)"
-        
-        final_response = re.sub(re.escape(full_tag), f"{full_tag}\n{trailer_info}\n{poster_info}", final_response, 1)
+
+        final_response = re.sub(re.escape(full_tag), f"{trailer_info}\n{poster_info}", final_response, 1)
 
     return final_response
