@@ -57,7 +57,7 @@ async def get_llm_response(user_message: str) -> str:
             poster_info = f"Poster: {poster_url}" if poster_url else ""
 
             watch_info = ""
-            if watch_providers:
+            if watch_providers and any(watch_providers.values()):
                 watch_info += "\n¿Dónde ver?"
                 if watch_providers.get('flatrate'):
                     watch_info += f"\nStreaming: {', '.join(watch_providers['flatrate'])}"
