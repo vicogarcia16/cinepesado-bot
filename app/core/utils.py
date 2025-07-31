@@ -8,7 +8,7 @@ def is_saludo(text: str) -> bool:
         return True
 
     for saludo in SALUDOS:
-        pattern = re.compile(f"(^|\W){re.escape(saludo)}($|\W)")
+        pattern = re.compile(rf"(^|\W){re.escape(saludo)}($|\W)")
         if pattern.search(cleaned_text):
             return True
             
