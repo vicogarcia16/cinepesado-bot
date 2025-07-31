@@ -20,8 +20,8 @@ async def lifespan(app: FastAPI):
     yield
     
 app = FastAPI(
-    title="CinePesado Bot API",
-    description="API para el bot de Telegram de CinePesado",
+    title="TelePesado Bot API",
+    description="API para el bot de Telegram TelePesado, un recomendador de películas y series.",
     version=f"{settings.API_VERSION}.0.0",
     docs_url="/",
     redoc_url="/redoc",
