@@ -37,7 +37,7 @@ async def get_llm_response(user_message: str) -> str:
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-    matches = re.findall(r'[TIPO:\s*(PELICULA|SERIE)\s*,\s*TÍTULO:\s*(.*?)\s*,\s*AÑO:\s*(\d{4})]', llm_response_content)
+    matches = re.findall(r'(\[TIPO:\s*(PELICULA|SERIE)\s*,\s*TÍTULO:\s*(.*?)\s*,\s*AÑO:\s*(\d{4})\])', llm_response_content)
     
     final_response = llm_response_content
     
