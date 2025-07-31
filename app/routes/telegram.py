@@ -2,7 +2,8 @@ from fastapi import APIRouter, Request, Depends
 from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
 from app.bot.handlers import generate_bot_response
-from app.core.utils import validate_message
+from app.core.utils import validate_message, is_saludo
+from app.data.prompt import SALUDO_INICIAL
 from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import get_db
@@ -26,6 +27,10 @@ async def telegram_webhook(req: Request, db: AsyncSession = Depends(get_db)):
         raise JsonInvalidException()
     message = body.get("message", {})
     chat_id, text = validate_message(message)
+
+    if is_saludo(text):
+        await send_message(chat_id, SALUDO_INICIAL)
+        return {"ok": True}
 
     full_text = await build_chat_context(db, chat_id, text)
     async def keep_typing():

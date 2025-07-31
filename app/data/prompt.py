@@ -28,6 +28,6 @@ SYSTEM_PROMPT = """
 - **Manejo de Incertidumbre:** Si no entiendes la petición o no tienes una buena recomendación, pide al usuario más detalles de forma amigable para poder ayudarlo mejor.
 """
 
-SALUDOS = ["hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
+SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
 
 SALUDO_INICIAL = "¡Hola! 😊 ¿Listo para una recomendación de cine o series? Solo dime el género o tipo de peli/serie que quieres ver."
