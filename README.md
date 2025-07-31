@@ -8,7 +8,7 @@ Bot de Telegram que recomienda películas y conversa de forma natural usando Fas
 
 * 🤖 Conversación natural: Interpreta preguntas o frases del usuario y responde de manera fluida, con validación previa del mensaje.
 
-* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas basadas en gustos, géneros o estados de ánimo, y añade automáticamente el **tráiler de YouTube** y el **póster oficial** de la película usando la API de TMDb.
+* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube**, **póster oficial**, **dónde verla** (streaming, alquiler o compra), **reparto principal** y **puntuación** de TMDb.
 
 * 🧠 IA potenciada con LLM (OpenRouter): Usa un modelo de lenguaje para generar respuestas contextuales y coherentes.
 
@@ -43,7 +43,8 @@ app/
   schemas/
     chat_history.py #  Lectura y validación de tipo de datos en objetos
   services/
-    llm_agent.py    # Lógica para llamar a OpenRouter y TMDb API
+    llm_agent.py    # Orquesta la lógica del LLM y el formato de la respuesta
+    tmdb_service.py # Lógica para interactuar con la API de TMDb
 requirements.txt    # Dependencias
 Procfile            # Comando para despliegue en Render
 ```
@@ -92,7 +93,7 @@ Se expone un endpoint `/ping` para verificar que el bot está activo y responder
 2. Se valida y limpia el mensaje recibido (`validate_message` en `utils.py`).
 3. Se recupera el historial del chat desde la base de datos (`db/chat_history.py`) para dar contexto.
 4. Se llama a OpenRouter para generar la respuesta (`services/llm_agent.py`).
-5. La respuesta del LLM se procesa para extraer los títulos de las películas. Se usa la API de TMDb para buscar el tráiler y el póster de cada una.
+5. La respuesta del LLM se procesa para extraer los títulos de las películas. Se usa el `tmdb_service` para buscar el tráiler, póster, dónde ver, reparto y puntuación de cada una.
 6. Se almacena el mensaje y respuesta en la base de datos (`db/chat_history.py`).
 7. Se envía la respuesta final, enriquecida con los links, al usuario vía Telegram (`bot/telegram.py`).
 
@@ -112,7 +113,7 @@ sequenceDiagram
     V->>D: Obtener historial reciente
     D-->>L: Enviar contexto a LLM
     L-->>F: Recibir respuesta con [TÍTULO]
-    F->>TM: Buscar tráiler y póster
+    F->>TM: Buscar datos (tráiler, póster, etc.)
     TM-->>F: Devolver links
     F->>G: Guardar en base de datos
     G->>D: Insertar nuevo registro

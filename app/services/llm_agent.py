@@ -1,83 +1,14 @@
 import httpx
 import re
-import asyncio
-import tmdbsimple as tmdb
 from app.core.config import get_settings
 from app.data.prompt import SYSTEM_PROMPT
-from app.core.exceptions import LLMApiError, YouTubeSearchError
+from app.core.exceptions import LLMApiError
+from app.services.tmdb_service import search_movie_data
 
 settings = get_settings()
 
 OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
-TMDB_API_KEY = settings.TMDB_API_KEY
-
-tmdb.API_KEY = TMDB_API_KEY
-
-async def _search_movie_by_year_and_title(search_client, movie_title: str, movie_year: str):
-    """Helper to search for a movie by title and year, prioritizing exact year match."""
-    response = await asyncio.to_thread(search_client.movie, query=movie_title, year=movie_year)
-    
-    best_match = None
-    if response['results']:
-        for movie_result in response['results']:
-            release_year = str(movie_result.get('release_date', ''))[:4]
-            if release_year == movie_year:
-                best_match = movie_result
-                break
-        if not best_match:
-            best_match = response['results'][0]
-
-    if not best_match:
-        response = await asyncio.to_thread(search_client.movie, query=movie_title)
-        if response['results']:
-            best_match = response['results'][0]
-            try:
-                min_year_diff = abs(int(movie_year) - int(str(best_match.get('release_date', ''))[:4]))
-            except (ValueError, TypeError):
-                min_year_diff = float('inf')
-
-            for movie_result in response['results']:
-                try:
-                    current_year_str = str(movie_result.get('release_date', ''))[:4]
-                    if not current_year_str:
-                        continue
-                    current_year = int(current_year_str)
-                    year_diff = abs(int(movie_year) - current_year)
-                    if year_diff < min_year_diff:
-                        min_year_diff = year_diff
-                        best_match = movie_result
-                except (ValueError, TypeError):
-                    continue
-                    
-    return best_match
-
-async def search_movie_data(movie_title: str, movie_year: str) -> dict:
-    """Searches for a movie and returns its trailer link and poster URL."""
-    search = tmdb.Search()
-    result = {
-        "trailer_link": None,
-        "poster_url": None
-    }
-    try:
-        best_match = await _search_movie_by_year_and_title(search, movie_title, movie_year)
-        if best_match:
-            movie_id = best_match['id']
-            movie = tmdb.Movies(movie_id)
-            details = await asyncio.to_thread(movie.info, append_to_response='videos')
-
-            if details and details.get('poster_path'):
-                result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"
-
-            videos = details.get('videos', {}).get('results', [])
-            for video in videos:
-                if video['site'] == 'YouTube' and video['type'] == 'Trailer':
-                    result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
-                    break
-    except Exception as e:
-        raise YouTubeSearchError(detail=f"Failed to search TMDb for movie data: {e}")
-
-    return result
 
 async def get_llm_response(user_message: str) -> str:
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -116,12 +47,30 @@ async def get_llm_response(user_message: str) -> str:
     else:
         for full_tag, movie_title, movie_year in matches:
             movie_data = await search_movie_data(movie_title, movie_year)
+            
             trailer_link = movie_data.get("trailer_link")
             poster_url = movie_data.get("poster_url")
-            
-            trailer_info = f"Tráiler: {trailer_link}" if trailer_link else "Tráiler: (No encontrado en TMDb)"
-            poster_info = f"Poster: {poster_url}" if poster_url else "Poster: (No encontrado)"
+            watch_providers = movie_data.get("watch_providers")
+            cast = movie_data.get("cast")
+            rating = movie_data.get("rating")
 
-            final_response = re.sub(re.escape(full_tag), f"{trailer_info}\n{poster_info}", final_response, 1)
+            trailer_info = f"Tráiler: {trailer_link}" if trailer_link else ""
+            poster_info = f"Poster: {poster_url}" if poster_url else ""
+
+            watch_info = ""
+            if watch_providers:
+                watch_info += "\n¿Dónde ver?"
+                if watch_providers.get('flatrate'):
+                    watch_info += f"\nStreaming: {', '.join(watch_providers['flatrate'])}"
+                if watch_providers.get('rent'):
+                    watch_info += f"\nAlquiler: {', '.join(watch_providers['rent'])}"
+                if watch_providers.get('buy'):
+                    watch_info += f"\nCompra: {', '.join(watch_providers['buy'])}"
+
+            cast_info = f"\nReparto: {', '.join(cast)}" if cast else ""
+            rating_info = f"\nPuntuación: {rating} / 10" if rating else ""
+
+            replacement_text = f"{trailer_info}\n{poster_info}{watch_info}{cast_info}{rating_info}"
+            final_response = re.sub(re.escape(full_tag), replacement_text, final_response, 1)
 
     return final_response.strip()
