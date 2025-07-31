@@ -24,7 +24,7 @@ SYSTEM_PROMPT = """
         "Para una serie increíble, mira 'Breaking Bad'. La transformación del prota es legendaria.
         [TIPO: SERIE, TÍTULO: Breaking Bad, AÑO: 2008]"
 
-        Repite esta estructura para cada recomendación. NO pongas todas las etiquetas juntas al final. El sistema se encargará de añadir los links de tráiler, póster, información de dónde verla, reparto y puntuación donde corresponde. NO generes los links tú mismo.
+        Repite esta estructura para cada recomendación. NO pongas todas las etiquetas juntas al final. El sistema se encargará de añadir los links de tráiler, póster, información de dónde verla y el reparto donde corresponde. NO generes los links tú mismo.
 - **Manejo de Incertidumbre:** Si no entiendes la petición o no tienes una buena recomendación, pide al usuario más detalles de forma amigable para poder ayudarlo mejor.
 """
 

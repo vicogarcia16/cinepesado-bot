@@ -52,7 +52,6 @@ async def get_llm_response(user_message: str) -> str:
             poster_url = movie_data.get("poster_url")
             watch_providers = movie_data.get("watch_providers")
             cast = movie_data.get("cast")
-            rating = movie_data.get("rating")
 
             trailer_info = f"Tráiler: {trailer_link}" if trailer_link else ""
             poster_info = f"Poster: {poster_url}" if poster_url else ""
@@ -68,9 +67,8 @@ async def get_llm_response(user_message: str) -> str:
                     watch_info += f"\nCompra: {', '.join(watch_providers['buy'])}"
 
             cast_info = f"\nReparto: {', '.join(cast)}" if cast else ""
-            rating_info = f"\nPuntuación: {rating} / 10" if rating else ""
 
-            replacement_text = f"{trailer_info}\n{poster_info}{watch_info}{cast_info}{rating_info}"
+            replacement_text = f"{trailer_info}\n{poster_info}{watch_info}{cast_info}"
             final_response = re.sub(re.escape(full_tag), replacement_text, final_response, 1)
 
     return final_response.strip()

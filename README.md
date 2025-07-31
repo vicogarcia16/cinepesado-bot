@@ -8,7 +8,7 @@ Bot de Telegram que recomienda películas y series, y conversa de forma natural 
 
 * 🤖 Conversación natural: Interpreta preguntas o frases del usuario y responde de manera fluida, con validación previa del mensaje.
 
-* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas y series basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube**, **póster oficial**, **dónde verla** (streaming, alquiler o compra), **reparto principal** y **puntuación** de TMDb.
+* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas y series basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube**, **póster oficial**, **dónde verla** (streaming, alquiler o compra) y **reparto principal**.
 
 * 🧠 IA potenciada con LLM (OpenRouter): Usa un modelo de lenguaje para generar respuestas contextuales y coherentes.
 
@@ -93,7 +93,7 @@ Se expone un endpoint `/ping` para verificar que el bot está activo y responder
 2. Se valida y limpia el mensaje recibido (`validate_message` en `utils.py`).
 3. Se recupera el historial del chat desde la base de datos (`db/chat_history.py`) para dar contexto.
 4. Se llama a OpenRouter para generar la respuesta (`services/llm_agent.py`).
-5. La respuesta del LLM se procesa para extraer los títulos de las películas. Se usa el `tmdb_service` para buscar el tráiler, póster, dónde ver, reparto y puntuación de cada una.
+5. La respuesta del LLM se procesa para extraer los títulos de las películas y series. Se usa el `tmdb_service` para buscar el tráiler, póster, dónde ver y el reparto de cada una.
 6. Se almacena el mensaje y respuesta en la base de datos (`db/chat_history.py`).
 7. Se envía la respuesta final, enriquecida con los links, al usuario vía Telegram (`bot/telegram.py`).
 

@@ -55,8 +55,7 @@ async def search_media_data(media_type: str, title: str, year: str) -> dict:
         "trailer_link": None,
         "poster_url": None,
         "watch_providers": None,
-        "cast": None,
-        "rating": None
+        "cast": None
     }
     try:
         best_match = await _search_media_by_year_and_title(search, media_type, title, year)
@@ -84,9 +83,6 @@ async def search_media_data(media_type: str, title: str, year: str) -> dict:
 
             if 'credits' in details and 'cast' in details['credits']:
                 result['cast'] = [actor['name'] for actor in details['credits']['cast'][:5]]
-
-            if 'vote_average' in details:
-                result['rating'] = round(details['vote_average'], 1)
 
     except Exception as e:
         raise YouTubeSearchError(detail=f"Failed to search TMDb for movie data: {e}")
