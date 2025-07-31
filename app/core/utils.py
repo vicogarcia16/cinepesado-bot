@@ -3,8 +3,16 @@ from app.core.exceptions import DataRequiredException
 import re
 
 def is_saludo(text: str) -> bool:
-    text = text.lower()
-    return any(re.search(rf"\b{re.escape(saludo)}\b", text) for saludo in SALUDOS)
+    cleaned_text = text.lower().strip()
+    if cleaned_text in SALUDOS:
+        return True
+
+    for saludo in SALUDOS:
+        pattern = re.compile(f"(^|\W){re.escape(saludo)}($|\W)")
+        if pattern.search(cleaned_text):
+            return True
+            
+    return False
 
 def parse_message(text: str) -> str:
     if not text:
