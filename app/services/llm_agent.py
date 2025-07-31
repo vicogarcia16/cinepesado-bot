@@ -99,15 +99,19 @@ async def get_llm_response(user_message: str) -> str:
     matches = re.findall(r'(\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\])', llm_response_content)
     
     final_response = llm_response_content
+    
+    if "Tráiler:" in llm_response_content and "Poster:" in llm_response_content:
+        for full_tag, _, _ in matches:
+            final_response = final_response.replace(full_tag, "")
+    else:
+        for full_tag, movie_title, movie_year in matches:
+            movie_data = await search_movie_data(movie_title, movie_year)
+            trailer_link = movie_data.get("trailer_link")
+            poster_url = movie_data.get("poster_url")
+            
+            trailer_info = f"Tráiler: {trailer_link}" if trailer_link else "Tráiler: (No encontrado en TMDb)"
+            poster_info = f"Poster: {poster_url}" if poster_url else "Poster: (No encontrado)"
 
-    for full_tag, movie_title, movie_year in matches:
-        movie_data = await search_movie_data(movie_title, movie_year)
-        trailer_link = movie_data.get("trailer_link")
-        poster_url = movie_data.get("poster_url")
-        
-        trailer_info = f"Tráiler: {trailer_link}" if trailer_link else "Tráiler: (No encontrado en TMDb)"
-        poster_info = f"Poster: {poster_url}" if poster_url else "Poster: (No encontrado)"
+            final_response = re.sub(re.escape(full_tag), f"{trailer_info}\n{poster_info}", final_response, 1)
 
-        final_response = re.sub(re.escape(full_tag), f"{trailer_info}\n{poster_info}", final_response, 1)
-
-    return final_response
+    return final_response.strip()
