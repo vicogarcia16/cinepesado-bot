@@ -3,7 +3,7 @@ import re
 from app.core.config import get_settings
 from app.data.prompt import SYSTEM_PROMPT
 from app.core.exceptions import LLMApiError
-from app.services.tmdb_service import search_movie_data
+from app.services.tmdb_service import search_media_data
 
 settings = get_settings()
 
@@ -46,7 +46,7 @@ async def get_llm_response(user_message: str) -> str:
             final_response = final_response.replace(full_tag, "")
     else:
         for full_tag, media_type, title, year in matches:
-            movie_data = await search_movie_data(media_type, title, year)
+            movie_data = await search_media_data(media_type, title, year)
             
             trailer_link = movie_data.get("trailer_link")
             poster_url = movie_data.get("poster_url")
