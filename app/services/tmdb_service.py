@@ -7,46 +7,49 @@ settings = get_settings()
 TMDB_API_KEY = settings.TMDB_API_KEY
 tmdb.API_KEY = TMDB_API_KEY
 
-async def _search_movie_by_year_and_title(search_client, movie_title: str, movie_year: str):
-    """Helper to search for a movie by title and year, prioritizing exact year match."""
-    response = await asyncio.to_thread(search_client.movie, query=movie_title, year=movie_year)
+async def _search_media_by_year_and_title(search_client, media_type: str, title: str, year: str):
+    """Helper to search for a movie or TV show by title and year."""
+    search_method = search_client.movie if media_type == 'PELICULA' else search_client.tv
+    date_key = 'release_date' if media_type == 'PELICULA' else 'first_air_date'
+    
+    response = await asyncio.to_thread(search_method, query=title, year=year)
     
     best_match = None
     if response['results']:
-        for movie_result in response['results']:
-            release_year = str(movie_result.get('release_date', ''))[:4]
-            if release_year == movie_year:
-                best_match = movie_result
+        for result in response['results']:
+            release_year = str(result.get(date_key, ''))[:4]
+            if release_year == year:
+                best_match = result
                 break
         if not best_match:
             best_match = response['results'][0]
 
     if not best_match:
-        response = await asyncio.to_thread(search_client.movie, query=movie_title)
+        response = await asyncio.to_thread(search_method, query=title)
         if response['results']:
             best_match = response['results'][0]
             try:
-                min_year_diff = abs(int(movie_year) - int(str(best_match.get('release_date', ''))[:4]))
+                min_year_diff = abs(int(year) - int(str(best_match.get(date_key, ''))[:4]))
             except (ValueError, TypeError):
                 min_year_diff = float('inf')
 
-            for movie_result in response['results']:
+            for result in response['results']:
                 try:
-                    current_year_str = str(movie_result.get('release_date', ''))[:4]
+                    current_year_str = str(result.get(date_key, ''))[:4]
                     if not current_year_str:
                         continue
                     current_year = int(current_year_str)
-                    year_diff = abs(int(movie_year) - current_year)
+                    year_diff = abs(int(year) - current_year)
                     if year_diff < min_year_diff:
                         min_year_diff = year_diff
-                        best_match = movie_result
+                        best_match = result
                 except (ValueError, TypeError):
                     continue
                     
     return best_match
 
-async def search_movie_data(movie_title: str, movie_year: str) -> dict:
-    """Searches for a movie and returns its trailer link, poster URL, watch providers, cast, and rating."""
+async def search_media_data(media_type: str, title: str, year: str) -> dict:
+    """Searches for a movie or TV show and returns its data."""
     search = tmdb.Search()
     result = {
         "trailer_link": None,
@@ -56,11 +59,11 @@ async def search_movie_data(movie_title: str, movie_year: str) -> dict:
         "rating": None
     }
     try:
-        best_match = await _search_movie_by_year_and_title(search, movie_title, movie_year)
+        best_match = await _search_media_by_year_and_title(search, media_type, title, year)
         if best_match:
-            movie_id = best_match['id']
-            movie = tmdb.Movies(movie_id)
-            details = await asyncio.to_thread(movie.info, append_to_response='videos,watch/providers,credits')
+            media_id = best_match['id']
+            media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
+            details = await asyncio.to_thread(media_obj.info, append_to_response='videos,watch/providers,credits')
 
             if details and details.get('poster_path'):
                 result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"

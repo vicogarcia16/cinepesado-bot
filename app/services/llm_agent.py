@@ -37,16 +37,16 @@ async def get_llm_response(user_message: str) -> str:
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-    matches = re.findall(r'(\[TÍTULO:\s*(.*?)\s*,?\s*AÑO:\s*(\d{4})\])', llm_response_content)
+    matches = re.findall(r'[TIPO:\s*(PELICULA|SERIE)\s*,\s*TÍTULO:\s*(.*?)\s*,\s*AÑO:\s*(\d{4})]', llm_response_content)
     
     final_response = llm_response_content
     
     if "Tráiler:" in llm_response_content and "Poster:" in llm_response_content:
-        for full_tag, _, _ in matches:
+        for full_tag, _, _, _ in matches:
             final_response = final_response.replace(full_tag, "")
     else:
-        for full_tag, movie_title, movie_year in matches:
-            movie_data = await search_movie_data(movie_title, movie_year)
+        for full_tag, media_type, title, year in matches:
+            movie_data = await search_movie_data(media_type, title, year)
             
             trailer_link = movie_data.get("trailer_link")
             poster_url = movie_data.get("poster_url")

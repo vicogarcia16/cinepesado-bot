@@ -1,5 +1,5 @@
-## 🎬 CinePesado Bot
-Bot de Telegram que recomienda películas y conversa de forma natural usando FastAPI y un modelo LLM vía OpenRouter. Enriquece las recomendaciones con tráilers de YouTube y pósters oficiales de películas obtenidos a través de la API de TMDb. Utiliza una base de datos en Neon para guardar el contexto del usuario y tiene un endpoint `/ping` para monitoreo del servicio con herramientas como UptimeRobot.
+## 🎬 TelePesado Bot
+Bot de Telegram que recomienda películas y series, y conversa de forma natural usando FastAPI y un modelo LLM vía OpenRouter. Enriquece las recomendaciones con tráilers de YouTube y pósters oficiales obtenidos a través de la API de TMDb. Utiliza una base de datos en Neon para guardar el contexto del usuario y tiene un endpoint `/ping` para monitoreo del servicio con herramientas como UptimeRobot.
 
 #### 🚀 Características
 * 📩 Webhook de Telegram: Recibe y responde mensajes automáticamente desde tu bot.
@@ -8,7 +8,7 @@ Bot de Telegram que recomienda películas y conversa de forma natural usando Fas
 
 * 🤖 Conversación natural: Interpreta preguntas o frases del usuario y responde de manera fluida, con validación previa del mensaje.
 
-* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube**, **póster oficial**, **dónde verla** (streaming, alquiler o compra), **reparto principal** y **puntuación** de TMDb.
+* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas y series basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube**, **póster oficial**, **dónde verla** (streaming, alquiler o compra), **reparto principal** y **puntuación** de TMDb.
 
 * 🧠 IA potenciada con LLM (OpenRouter): Usa un modelo de lenguaje para generar respuestas contextuales y coherentes.
 
