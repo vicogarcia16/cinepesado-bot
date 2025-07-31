@@ -21,7 +21,8 @@ async def _search_movie_by_year_and_title(search_client, movie_title: str, movie
     best_match = None
     if response['results']:
         for movie_result in response['results']:
-            if str(movie_result.get('release_date', ''))[:4] == movie_year:
+            release_year = str(movie_result.get('release_date', ''))[:4]
+            if release_year == movie_year:
                 best_match = movie_result
                 break
         if not best_match:
@@ -31,15 +32,24 @@ async def _search_movie_by_year_and_title(search_client, movie_title: str, movie
         response = await asyncio.to_thread(search_client.movie, query=movie_title)
         if response['results']:
             best_match = response['results'][0]
-            min_year_diff = abs(int(movie_year) - int(str(best_match.get('release_date', ''))[:4] or 0))
+            try:
+                min_year_diff = abs(int(movie_year) - int(str(best_match.get('release_date', ''))[:4]))
+            except (ValueError, TypeError):
+                min_year_diff = float('inf')
 
             for movie_result in response['results']:
-                current_year = int(str(movie_result.get('release_date', ''))[:4] or 0)
-                if current_year:
+                try:
+                    current_year_str = str(movie_result.get('release_date', ''))[:4]
+                    if not current_year_str:
+                        continue
+                    current_year = int(current_year_str)
                     year_diff = abs(int(movie_year) - current_year)
                     if year_diff < min_year_diff:
                         min_year_diff = year_diff
                         best_match = movie_result
+                except (ValueError, TypeError):
+                    continue
+                    
     return best_match
 
 async def search_movie_data(movie_title: str, movie_year: str) -> dict:
