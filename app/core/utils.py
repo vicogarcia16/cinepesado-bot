@@ -24,6 +24,8 @@ def parse_message(text: str) -> str:
     text = re.sub(r"(?<!\*)\*(?!\*)(.*?)\*(?!\*)", r"<i>\1</i>", text)
     text = re.sub(r"^- (.+)$", r"• \1", text, flags=re.MULTILINE)
     text = re.sub(r"</?(ul|li|h2|h3|h4|h5|h6)>", "", text)
+    text = re.sub(r"Tráiler: (https?://[^\s]+)", r'Tráiler: <a href="\1">\1</a>', text)
+    text = re.sub(r"Poster: (https?://[^\s]+)", r'Poster: <a href="\1">\1</a>', text)
     text = re.sub(r"\[([^\]]+)\]\((https?://[^\)]+)\)", r'<a href="\2">\1</a>', text)
     return text.strip()
 

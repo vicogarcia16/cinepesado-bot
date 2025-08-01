@@ -1,14 +1,13 @@
 from fastapi import APIRouter, Request, BackgroundTasks
 from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
-from app.bot.handlers import generate_bot_response
 from app.core.utils import validate_message, is_saludo
 from app.data.prompt import SALUDO_INICIAL
 from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import AsyncSessionLocal
-from sqlalchemy.ext.asyncio import AsyncSession
 import asyncio
+from app.services.llm_agent import get_llm_response
 
 router = APIRouter(prefix="/telegram", 
                    tags=["telegram"], 
@@ -26,7 +25,7 @@ async def process_message_task(chat_id: int, text: str):
 
         typing_task = asyncio.create_task(keep_typing())
         try:
-            response = await generate_bot_response(full_text)
+            response = await get_llm_response(full_text)
         finally:
             typing_task.cancel()
 
