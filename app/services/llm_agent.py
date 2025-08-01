@@ -47,8 +47,8 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         {"role": "system", "content": IDENTIFICATION_PROMPT},
     ]
     for entry in history:
-        identification_messages.append({"role": "user", "content": entry.user_message})
-        identification_messages.append({"role": "assistant", "content": entry.bot_response})
+        identification_messages.append({"role": "user", "content": entry.message})
+        identification_messages.append({"role": "assistant", "content": entry.response})
     identification_messages.append({"role": "user", "content": user_message})
 
     identification_response = await _call_llm_api(identification_messages, is_json=True)
@@ -62,8 +62,8 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             {"role": "system", "content": SUGGESTION_PROMPT},
         ]
         for entry in history:
-            suggestion_messages.append({"role": "user", "content": entry.user_message})
-            suggestion_messages.append({"role": "assistant", "content": entry.bot_response})
+            suggestion_messages.append({"role": "user", "content": entry.message})
+            suggestion_messages.append({"role": "assistant", "content": entry.response})
         suggestion_messages.append({"role": "user", "content": user_message})
 
         suggestion_response = await _call_llm_api(suggestion_messages, is_json=True)
@@ -78,8 +78,8 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
                 {"role": "system", "content": creative_prompt_content},
             ]
             for entry in history:
-                creative_messages.append({"role": "user", "content": entry.user_message})
-                creative_messages.append({"role": "assistant", "content": entry.bot_response})
+                creative_messages.append({"role": "user", "content": entry.message})
+                creative_messages.append({"role": "assistant", "content": entry.response})
             creative_messages.append({"role": "user", "content": user_message})
             return await _call_llm_api(creative_messages)
         
