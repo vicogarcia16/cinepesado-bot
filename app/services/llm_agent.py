@@ -73,7 +73,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             suggested_media_list = []
         
         if not suggested_media_list:
-            creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data="")
+            creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps([], indent=2, ensure_ascii=False))
             creative_messages = [
                 {"role": "system", "content": creative_prompt_content},
             ]
