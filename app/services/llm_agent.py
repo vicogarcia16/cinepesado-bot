@@ -39,8 +39,9 @@ async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-async def get_llm_response(chat_id: int, user_message: str) -> str:
-    history = await chat_history.get_chat_history(chat_id)
+async def get_llm_response(db, chat_id: int, user_message: str) -> str:
+    history_response = await chat_history.get_last_chats(db, chat_id)
+    history = history_response.data
 
     identification_messages = [
         {"role": "system", "content": IDENTIFICATION_PROMPT},
