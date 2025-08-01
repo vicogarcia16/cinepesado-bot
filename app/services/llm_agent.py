@@ -79,7 +79,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             ]
             for entry in history:
                 creative_messages.append({"role": "user", "content": entry.message})
-        creative_messages.append({"role": "assistant", "content": entry.response})
+                creative_messages.append({"role": "assistant", "content": entry.response})
             creative_messages.append({"role": "user", "content": user_message})
             return await _call_llm_api(creative_messages)
         
