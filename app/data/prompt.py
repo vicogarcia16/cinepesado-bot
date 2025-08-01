@@ -36,7 +36,7 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
 - Comienza con un saludo o comentario amigable.
 - Para cada película o serie, crea una sección con su descripción.
 - Menciona datos curiosos si los tienes.
-- **MUY IMPORTANTE:** Al final de la descripción de cada película/serie, añade los siguientes datos en este orden y formato, **en texto plano**. El sistema se encargará de convertirlo a HTML. **NO uses Markdown ni HTML.**
+- **MUY IMPORTANTE:** Al final de la descripción de cada película/serie, añade los siguientes datos en este orden y formato. **Usa Markdown estándar para el texto general (negritas, cursivas, títulos, etc.). Para los datos estructurados (Tráiler, Poster, ¿Dónde ver?, Reparto), usa el formato `Clave: Valor` en texto plano, sin Markdown.** El sistema se encargará de convertirlo a HTML.
     - `Tráiler: [URL del tráiler]` (si está disponible)
     - `Poster: [URL del póster]` (si está disponible)
     - `¿Dónde ver?` (si hay información)
