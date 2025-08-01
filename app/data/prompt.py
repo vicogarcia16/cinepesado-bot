@@ -37,6 +37,33 @@ Usuario: No sé qué ver.
 Respuesta: {"media": []}
 """
 
+SUGGESTION_PROMPT = """
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. Responde únicamente con un objeto JSON que contenga una lista de los medios sugeridos.
+
+Formato de salida:
+{
+  "media": [
+    {
+      "type": "PELICULA" o "SERIE",
+      "title": "Nombre de la Película o Serie",
+      "year": "Año de estreno (si es relevante, opcional)"
+    }
+  ]
+}
+
+Si no puedes sugerir nada, responde con: {"media": []}.
+
+Ejemplos:
+Usuario: Recomiéndame otras películas de Will Ferrell.
+Respuesta: {"media": [{"type": "PELICULA", "title": "Anchorman: The Legend of Ron Burgundy"}, {"type": "PELICULA", "title": "Talladega Nights: The Ballad of Ricky Bobby"}]}
+
+Usuario: Quiero ver una serie de comedia.
+Respuesta: {"media": [{"type": "SERIE", "title": "The Office"}, {"type": "SERIE", "title": "Parks and Recreation"}]}
+
+Usuario: Dame algo de acción.
+Respuesta: {"media": [{"type": "PELICULA", "title": "Mad Max: Fury Road"}, {"type": "PELICULA", "title": "John Wick"}]}
+"""
+
 CREATIVE_PROMPT = """
 ### Personalidad
 - Eres un cinéfilo apasionado y experto que habla como un amigo cercano y entusiasta.

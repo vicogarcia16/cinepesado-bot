@@ -2,9 +2,10 @@ import httpx
 import json
 import asyncio
 from app.core.config import get_settings
-from app.data.prompt import IDENTIFICATION_PROMPT, CREATIVE_PROMPT
+from app.data.prompt import IDENTIFICATION_PROMPT, CREATIVE_PROMPT, SUGGESTION_PROMPT
 from app.core.exceptions import LLMApiError
 from app.services.tmdb_service import search_media_data
+from app.db import chat_history
 
 
 settings = get_settings()
@@ -12,7 +13,7 @@ settings = get_settings()
 OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
 
-async def _call_llm_api(prompt: str, user_message: str, is_json: bool = False) -> str:
+async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -20,10 +21,7 @@ async def _call_llm_api(prompt: str, user_message: str, is_json: bool = False) -
     }
     data = {
         "model": OPENROUTER_MODEL,
-        "messages": [
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": user_message}
-        ],
+        "messages": messages,
         "temperature": 0.7,
         "max_tokens": 1500
     }
@@ -41,15 +39,50 @@ async def _call_llm_api(prompt: str, user_message: str, is_json: bool = False) -
                 error_detail += f" Raw response: {res.text}"
             raise LLMApiError(detail=error_detail)
 
-async def get_llm_response(user_message: str) -> str:
-    identification_response = await _call_llm_api(IDENTIFICATION_PROMPT, user_message, is_json=True)
+async def get_llm_response(chat_id: int, user_message: str) -> str:
+    history = await chat_history.get_chat_history(chat_id)
+
+    identification_messages = [
+        {"role": "system", "content": IDENTIFICATION_PROMPT},
+    ]
+    for entry in history:
+        identification_messages.append({"role": "user", "content": entry.user_message})
+        identification_messages.append({"role": "assistant", "content": entry.bot_response})
+    identification_messages.append({"role": "user", "content": user_message})
+
+    identification_response = await _call_llm_api(identification_messages, is_json=True)
     try:
         media_list = json.loads(identification_response).get("media", [])
     except json.JSONDecodeError:
         media_list = []
 
     if not media_list:
-        return await _call_llm_api(CREATIVE_PROMPT.format(user_query=user_message, media_data=""), user_message)
+        suggestion_messages = [
+            {"role": "system", "content": SUGGESTION_PROMPT},
+        ]
+        for entry in history:
+            suggestion_messages.append({"role": "user", "content": entry.user_message})
+            suggestion_messages.append({"role": "assistant", "content": entry.bot_response})
+        suggestion_messages.append({"role": "user", "content": user_message})
+
+        suggestion_response = await _call_llm_api(suggestion_messages, is_json=True)
+        try:
+            suggested_media_list = json.loads(suggestion_response).get("media", [])
+        except json.JSONDecodeError:
+            suggested_media_list = []
+        
+        if not suggested_media_list:
+            creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data="")
+            creative_messages = [
+                {"role": "system", "content": creative_prompt_content},
+            ]
+            for entry in history:
+                creative_messages.append({"role": "user", "content": entry.user_message})
+                creative_messages.append({"role": "assistant", "content": entry.bot_response})
+            creative_messages.append({"role": "user", "content": user_message})
+            return await _call_llm_api(creative_messages)
+        
+        media_list = suggested_media_list
 
     tasks = [search_media_data(media.get("type"), media.get("title"), media.get("year")) for media in media_list]
     media_data_results = await asyncio.gather(*tasks)
@@ -66,7 +99,15 @@ async def get_llm_response(user_message: str) -> str:
             "cast": data.get("cast")
         })
 
-    creative_prompt = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False))
-    final_response = await _call_llm_api(creative_prompt, user_message)
+    creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False))
+    creative_messages = [
+        {"role": "system", "content": creative_prompt_content},
+    ]
+    for entry in history:
+        creative_messages.append({"role": "user", "content": entry.user_message})
+        creative_messages.append({"role": "assistant", "content": entry.bot_response})
+    creative_messages.append({"role": "user", "content": user_message})
+
+    final_response = await _call_llm_api(creative_messages)
 
     return final_response.strip()
