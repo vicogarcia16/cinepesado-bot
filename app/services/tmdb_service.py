@@ -82,7 +82,9 @@ async def search_media_data(media_type: str, title: str, year: str) -> dict:
                 }
 
             if 'credits' in details and 'cast' in details['credits']:
-                result['cast'] = [actor['name'] for actor in details['credits']['cast'][:5]]
+                cast_data = details['credits']['cast']
+                sorted_cast = sorted(cast_data, key=lambda actor: actor.get('order', float('inf')))
+                result['cast'] = [actor['name'] for actor in sorted_cast[:5]]
 
     except Exception as e:
         raise YouTubeSearchError(detail=f"Failed to search TMDb for movie data: {e}")
