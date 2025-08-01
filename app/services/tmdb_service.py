@@ -8,38 +8,38 @@ TMDB_API_KEY = settings.TMDB_API_KEY
 tmdb.API_KEY = TMDB_API_KEY
 
 async def _search_media_by_year_and_title(search_client, media_type: str, title: str, year: str):
-    """Helper to search for a movie or TV show by title and year."""
+    
     search_method = search_client.movie if media_type == 'PELICULA' else search_client.tv
     date_key = 'release_date' if media_type == 'PELICULA' else 'first_air_date'
     
-    response = await asyncio.to_thread(search_method, query=title, year=year)
     
+    response_with_year = await asyncio.to_thread(search_method, query=title, year=year)
     best_match = None
-    if response['results']:
-        for result in response['results']:
+    if response_with_year['results']:
+        for result in response_with_year['results']:
             release_year = str(result.get(date_key, ''))[:4]
             if release_year == year:
                 best_match = result
                 break
-        if not best_match:
-            best_match = response['results'][0]
 
+    
     if not best_match:
-        response = await asyncio.to_thread(search_method, query=title)
-        if response['results']:
-            best_match = response['results'][0]
+        response_no_year = await asyncio.to_thread(search_method, query=title)
+        if response_no_year['results']:
+            best_match = response_no_year['results'][0] # Initialize with the first result
             try:
-                min_year_diff = abs(int(year) - int(str(best_match.get(date_key, ''))[:4]))
+                target_year = int(year)
+                min_year_diff = abs(target_year - int(str(best_match.get(date_key, ''))[:4]))
             except (ValueError, TypeError):
                 min_year_diff = float('inf')
 
-            for result in response['results']:
+            for result in response_no_year['results']:
                 try:
                     current_year_str = str(result.get(date_key, ''))[:4]
                     if not current_year_str:
                         continue
                     current_year = int(current_year_str)
-                    year_diff = abs(int(year) - current_year)
+                    year_diff = abs(target_year - current_year)
                     if year_diff < min_year_diff:
                         min_year_diff = year_diff
                         best_match = result
@@ -48,8 +48,9 @@ async def _search_media_by_year_and_title(search_client, media_type: str, title:
                     
     return best_match
 
+
 async def search_media_data(media_type: str, title: str, year: str) -> dict:
-    """Searches for a movie or TV show and returns its data."""
+    
     search = tmdb.Search()
     result = {
         "trailer_link": None,
