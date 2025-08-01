@@ -1,5 +1,5 @@
 IDENTIFICATION_PROMPT = """
-Tu única tarea es identificar películas o series en el texto del usuario. Responde únicamente con un objeto JSON que contenga una lista de los medios encontrados.
+Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). Responde únicamente con un objeto JSON que contenga una lista de los medios encontrados.
 
 Formato de salida:
 {
@@ -7,12 +7,34 @@ Formato de salida:
     {
       "type": "PELICULA" o "SERIE",
       "title": "Nombre de la Película o Serie",
-      "year": "Año de estreno (si se menciona)"
+      "year": "Año de estreno (si se menciona, opcional)"
     }
   ]
 }
 
 Si no encuentras ninguna película o serie, responde con: {"media": []}.
+
+Ejemplos:
+Usuario: Me gustaría saber sobre la película "El Padrino".
+Respuesta: {"media": [{"type": "PELICULA", "title": "El Padrino"}]}
+
+Usuario: ¿Qué tal la serie "Friends"?
+Respuesta: {"media": [{"type": "SERIE", "title": "Friends"}]}
+
+Usuario: Recomiéndame otras películas de Will Ferrell como "Elf" o "Blades of Glory".
+Respuesta: {"media": [{"type": "PELICULA", "title": "Elf"}, {"type": "PELICULA", "title": "Blades of Glory"}]}
+
+Usuario: Háblame de "The Office" de Estados Unidos.
+Respuesta: {"media": [{"type": "SERIE", "title": "The Office", "year": "Estados Unidos"}]}
+
+Usuario: ¿Tienes información sobre "Zoolander" (2001)?
+Respuesta: {"media": [{"type": "PELICULA", "title": "Zoolander", "year": "2001"}]}
+
+Usuario: ¿Qué me dices de "The Campaign" o "Blades of Glory"?
+Respuesta: {"media": [{"type": "PELICULA", "title": "The Campaign"}, {"type": "PELICULA", "title": "Blades of Glory"}]}
+
+Usuario: No sé qué ver.
+Respuesta: {"media": []}
 """
 
 CREATIVE_PROMPT = """
