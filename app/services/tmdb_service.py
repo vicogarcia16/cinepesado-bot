@@ -90,7 +90,7 @@ async def search_media_data(media_type: str, title: str, year: str) -> dict:
 
             if 'credits' in details and 'cast' in details['credits']:
                 cast_data = details['credits']['cast']
-                sorted_cast = sorted(cast_data, key=lambda actor: actor.get('order', float('inf')))
+                sorted_cast = sorted(cast_data, key=lambda actor: actor.get('popularity', 0.0), reverse=True)
                 result['cast'] = [actor['name'] for actor in sorted_cast[:5]]
 
     except Exception as e:

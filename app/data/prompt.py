@@ -35,7 +35,8 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
 - Para cada película o serie, crea una sección con su descripción.
 - Menciona datos curiosos si los tienes.
 - **FORMATO DE SALIDA (CRÍTICO):**
-    - **TODO el texto general debe ser en Markdown estándar.** (Ej: `**negrita**`, `*cursiva*`, `### Título`).
+    - **TODO el texto general debe ser en Markdown estándar.** (Ej: `**negrita**`, `*cursiva*`).
+    - **Para los títulos de películas/series, usa negritas Markdown (`**Título**`).**
     - **Para los datos estructurados (Tráiler, Poster, ¿Dónde ver?, Reparto), usa el formato `Clave: Valor` en texto plano, sin Markdown ni HTML.** Cada dato en una línea nueva.
     - **NO** añadas texto conversacional dentro de los bloques de datos estructurados.
     - **NO** intentes generar HTML. El sistema (`parse_message`) lo hará por ti.
