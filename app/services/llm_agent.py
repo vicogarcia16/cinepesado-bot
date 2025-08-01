@@ -41,34 +41,30 @@ async def get_llm_response(user_message: str) -> str:
     
     final_response = llm_response_content
     
-    if "Tráiler:" in llm_response_content and "Poster:" in llm_response_content:
-        for full_tag, _, _, _ in matches:
-            final_response = final_response.replace(full_tag, "")
-    else:
-        for full_tag, media_type, title, year in matches:
-            movie_data = await search_media_data(media_type, title, year)
-            
-            trailer_link = movie_data.get("trailer_link")
-            poster_url = movie_data.get("poster_url")
-            watch_providers = movie_data.get("watch_providers")
-            cast = movie_data.get("cast")
+    for full_tag, media_type, title, year in matches:
+        movie_data = await search_media_data(media_type, title, year)
+        
+        trailer_link = movie_data.get("trailer_link")
+        poster_url = movie_data.get("poster_url")
+        watch_providers = movie_data.get("watch_providers")
+        cast = movie_data.get("cast")
 
-            trailer_info = f"Tráiler: {trailer_link}" if trailer_link else ""
-            poster_info = f"Poster: {poster_url}" if poster_url else ""
+        trailer_info = f"Tráiler: {trailer_link}" if trailer_link else ""
+        poster_info = f"Poster: {poster_url}" if poster_url else ""
 
-            watch_info = ""
-            if watch_providers and any(watch_providers.values()):
-                watch_info += "\n¿Dónde ver?"
-                if watch_providers.get('flatrate'):
-                    watch_info += f"\nStreaming: {', '.join(watch_providers['flatrate'])}"
-                if watch_providers.get('rent'):
-                    watch_info += f"\nAlquiler: {', '.join(watch_providers['rent'])}"
-                if watch_providers.get('buy'):
-                    watch_info += f"\nCompra: {', '.join(watch_providers['buy'])}"
+        watch_info = ""
+        if watch_providers and any(watch_providers.values()):
+            watch_info += "\n¿Dónde ver?"
+            if watch_providers.get('flatrate'):
+                watch_info += f"\nStreaming: {', '.join(watch_providers['flatrate'])}"
+            if watch_providers.get('rent'):
+                watch_info += f"\nAlquiler: {', '.join(watch_providers['rent'])}"
+            if watch_providers.get('buy'):
+                watch_info += f"\nCompra: {', '.join(watch_providers['buy'])}"
 
-            cast_info = f"\nReparto: {', '.join(cast)}" if cast else ""
+        cast_info = f"\nReparto: {', '.join(cast)}" if cast else ""
 
-            replacement_text = f"{trailer_info}\n{poster_info}{watch_info}{cast_info}"
-            final_response = re.sub(re.escape(full_tag), replacement_text, final_response, 1)
+        replacement_text = f"{trailer_info}\n{poster_info}{watch_info}{cast_info}"
+        final_response = re.sub(re.escape(full_tag), replacement_text, final_response, 1)
 
     return final_response.strip()
