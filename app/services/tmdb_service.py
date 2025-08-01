@@ -68,10 +68,17 @@ async def search_media_data(media_type: str, title: str, year: str) -> dict:
                 result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"
 
             videos = details.get('videos', {}).get('results', [])
-            for video in videos:
-                if video['site'] == 'YouTube' and video['type'] == 'Trailer':
-                    result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
-                    break
+            if videos:
+                for video in videos:
+                    if video['site'] == 'YouTube' and video.get('type') in ['Trailer', 'Teaser']:
+                        result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
+                        break
+                
+                if not result["trailer_link"]:
+                    for video in videos:
+                        if video['site'] == 'YouTube':
+                            result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
+                            break
             
             if 'watch/providers' in details and 'results' in details['watch/providers'] and 'PE' in details['watch/providers']['results']:
                 providers = details['watch/providers']['results']['PE']
