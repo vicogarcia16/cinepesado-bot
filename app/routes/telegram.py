@@ -25,7 +25,7 @@ async def process_message_task(chat_id: int, text: str):
 
         typing_task = asyncio.create_task(keep_typing())
         try:
-            response = await get_llm_response(full_text)
+            response = await get_llm_response(chat_id, full_text)
         finally:
             typing_task.cancel()
 
