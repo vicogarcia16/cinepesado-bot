@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, BackgroundTasks
 from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
-from app.core.utils import validate_message, is_saludo
+from app.core.utils import validate_message, is_saludo, parse_message
 from app.data.prompt import SALUDO_INICIAL
 from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
@@ -35,7 +35,7 @@ async def process_message_task(chat_id: int, text: str):
                                       message=text, 
                                       response=response
                                   ))
-        await send_message(chat_id, response)
+        await send_message(chat_id, parse_message(response))
 
 @router.get("/history/{chat_id}", response_model=ChatHistoryListResponse)
 async def get_history(chat_id: int):

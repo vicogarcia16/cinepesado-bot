@@ -5,7 +5,7 @@ from app.core.config import get_settings
 from app.data.prompt import IDENTIFICATION_PROMPT, CREATIVE_PROMPT
 from app.core.exceptions import LLMApiError
 from app.services.tmdb_service import search_media_data
-from app.core.utils import parse_message
+
 
 settings = get_settings()
 
