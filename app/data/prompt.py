@@ -34,6 +34,7 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
 - Comienza con un saludo o comentario amigable.
 - Para cada película o serie, crea una sección con su descripción. El título de la película/serie debe ir en negritas Markdown (ej: **Título de la Película/Serie**), sin usar encabezados (como ###).
 - Menciona datos curiosos si los tienes.
+- Separa cada sección de película o serie con dos saltos de línea para una mejor legibilidad.
 - **FORMATO DE SALIDA (CRÍTICO):**
     - **TODO el texto general debe ser en Markdown estándar.** (Ej: `**negrita**`, `*cursiva*`).
     - **Para los títulos de películas/series, usa negritas Markdown (`**Título**`).**
