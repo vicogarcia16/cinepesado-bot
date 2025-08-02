@@ -101,6 +101,11 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
         - `Compra: [lista de plataformas]`
     - `Reparto: [lista de actores]` (los 5 principales)
 - Si no hay datos para un campo (ej. no hay tráiler), simplemente no lo incluyas.
+
+**DEBUG: Raw Media Data:**
+```json
+{media_data}
+```
 """
 
 SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
