@@ -51,9 +51,9 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         identification_messages.append({"role": "assistant", "content": entry.response})
     identification_messages.append({"role": "user", "content": user_message})
 
-    identification_response = await _call_llm_api(identification_messages, is_json=True)
+    identification_response_content = await _call_llm_api(identification_messages, is_json=True)
     try:
-        media_list = json.loads(identification_response).get("media", [])
+        media_list = json.loads(identification_response_content).get("media", [])
     except json.JSONDecodeError:
         media_list = []
 
@@ -66,24 +66,24 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             suggestion_messages.append({"role": "assistant", "content": entry.response})
         suggestion_messages.append({"role": "user", "content": user_message})
 
-        suggestion_response = await _call_llm_api(suggestion_messages, is_json=True)
+        suggestion_response_content = await _call_llm_api(suggestion_messages, is_json=True)
         try:
-            suggested_media_list = json.loads(suggestion_response).get("media", [])
+            suggested_media_list = json.loads(suggestion_response_content).get("media", [])
         except json.JSONDecodeError:
             suggested_media_list = []
         
-        if not suggested_media_list:
-            creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps([], indent=2, ensure_ascii=False))
-            creative_messages = [
-                {"role": "system", "content": creative_prompt_content},
-            ]
-            for entry in history:
-                creative_messages.append({"role": "user", "content": entry.message})
-                creative_messages.append({"role": "assistant", "content": entry.response})
-            creative_messages.append({"role": "user", "content": user_message})
-            return await _call_llm_api(creative_messages)
-        
         media_list = suggested_media_list
+
+    if not media_list:
+        creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps([], indent=2, ensure_ascii=False))
+        creative_messages = [
+            {"role": "system", "content": creative_prompt_content},
+        ]
+        for entry in history:
+            creative_messages.append({"role": "user", "content": entry.message})
+            creative_messages.append({"role": "assistant", "content": entry.response})
+        creative_messages.append({"role": "user", "content": user_message})
+        return await _call_llm_api(creative_messages)
 
     tasks = [search_media_data(media.get("type"), media.get("title"), media.get("year")) for media in media_list]
     media_data_results = await asyncio.gather(*tasks)
