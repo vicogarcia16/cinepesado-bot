@@ -23,17 +23,17 @@ async def _search_media_by_year_and_title(search_client, media_type: str, title:
             current_year_str = str(result.get(date_key, ''))[:4]
             current_year = int(current_year_str) if current_year_str.isdigit() else None
 
-            if target_year and current_year is not None:
-                year_diff = abs(int(target_year) - current_year)
-            else:
-                year_diff = 0
+            year_diff = abs(int(target_year) - current_year) if target_year and current_year is not None else float('inf')
 
             if has_poster:
-                if not best_local_match_has_poster or (target_year and year_diff < min_local_year_diff):
+                if not best_local_match_has_poster: 
                     best_local_match = result
                     best_local_match_has_poster = True
                     min_local_year_diff = year_diff
-            elif not best_local_match_has_poster and (target_year and year_diff < min_local_year_diff):
+                elif year_diff < min_local_year_diff: 
+                    best_local_match = result
+                    min_local_year_diff = year_diff
+            elif not best_local_match_has_poster and year_diff < min_local_year_diff:
                 best_local_match = result
                 min_local_year_diff = year_diff
             elif not best_local_match:
@@ -43,28 +43,21 @@ async def _search_media_by_year_and_title(search_client, media_type: str, title:
         return best_local_match
 
     response_with_year = await asyncio.to_thread(search_method, query=title, year=year)
-    if response_with_year['results']:
-        best_match = find_best_in_results(response_with_year['results'], year)
-        if best_match and best_match.get('poster_path'):
-            return best_match
+    if response_with_year and response_with_year.get('results'):
+        best_match_with_year = find_best_in_results(response_with_year['results'], year)
+        if best_match_with_year and best_match_with_year.get('poster_path'):
+            return best_match_with_year
 
     response_no_year = await asyncio.to_thread(search_method, query=title)
-    if response_no_year['results']:
-        temp_best_match_no_year = find_best_in_results(response_no_year['results'], year)
-        if temp_best_match_no_year and temp_best_match_no_year.get('poster_path'):
-            return temp_best_match_no_year
-        elif not best_match:
-            best_match = temp_best_match_no_year
+    if response_no_year and response_no_year.get('results'):
+        best_match_no_year = find_best_in_results(response_no_year['results'], year)
+        if best_match_no_year and best_match_no_year.get('poster_path'):
+            return best_match_no_year
+        elif not best_match_with_year:
+            best_match = best_match_no_year
 
-    all_results = []
-    if response_with_year['results']:
-        all_results.extend(response_with_year['results'])
-    if response_no_year['results']:
-        all_results.extend(response_no_year['results'])
-    
-    for result in all_results:
-        if result.get('poster_path'):
-            return result
+    if best_match_with_year and not best_match:
+        best_match = best_match_with_year
 
     return best_match
 
