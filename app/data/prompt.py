@@ -38,7 +38,7 @@ Respuesta: {"media": []}
 """
 
 SUGGESTION_PROMPT = """
-Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **Prioriza sugerir títulos populares y bien conocidos para los que es probable que haya información detallada.** Responde únicamente con un objeto JSON que contenga una lista de los medios sugeridos.
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **Siempre debes intentar sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada.** Responde únicamente con un objeto JSON que contenga una lista de los medios sugeridos.
 
 Formato de salida:
 {
@@ -101,21 +101,6 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
         - `Compra: [lista de plataformas]`
     - `Reparto: [lista de actores]` (los 5 principales)
 - Si no hay datos para un campo (ej. no hay tráiler), simplemente no lo incluyas.
-
-**DEBUG: Raw Media Data:**
-```json
-{media_data}
-```
-
-**DEBUG: Identification Raw Response:**
-```json
-{identification_raw}
-```
-
-**DEBUG: Suggestion Raw Response:**
-```json
-{suggestion_raw}
-```
 """
 
 SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
