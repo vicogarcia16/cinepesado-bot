@@ -7,33 +7,21 @@ settings = get_settings()
 TMDB_API_KEY = settings.TMDB_API_KEY
 tmdb.API_KEY = TMDB_API_KEY
 
-async def _search_media_by_year_and_title(search_client, media_type: str, title: str, year: str):
+async def _search_media(search_client, media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None):
     search_method = search_client.movie if media_type == 'PELICULA' else search_client.tv
     date_key = 'release_date' if media_type == 'PELICULA' else 'first_air_date'
     
     best_match = None
 
-    response_with_year = await asyncio.to_thread(search_method, query=title, year=year)
-    if response_with_year and response_with_year.get('results'):
-        for result in response_with_year['results']:
-            release_year = str(result.get(date_key, ''))[:4]
-            if result.get('poster_path') and release_year == year:
-                return result
+    search_params = {"query": title}
+    if year:
+        search_params["year"] = year
 
-
-    response_no_year = await asyncio.to_thread(search_method, query=title)
-    if response_no_year and response_no_year.get('results'):
-        for result in response_no_year['results']:
-            if result.get('poster_path'):
-                return result
+    response = await asyncio.to_thread(search_method, **search_params)
 
     all_results = []
-    if response_with_year and response_with_year.get('results'):
-        all_results.extend(response_with_year['results'])
-    if response_no_year and response_no_year.get('results'):
-        for res in response_no_year['results']:
-            if res not in all_results:
-                all_results.append(res)
+    if response and response.get('results'):
+        all_results.extend(response['results'])
 
     best_score = -1
 
@@ -45,26 +33,49 @@ async def _search_media_by_year_and_title(search_client, media_type: str, title:
         score = 0
 
         if has_poster:
-            score += 100 # Strong preference for posters
+            score += 100
 
-        if current_year is not None:
+        if year and current_year is not None:
             if str(current_year) == year:
-                score += 50 # Exact year match
+                score += 50
             else:
                 year_diff = abs(int(year) - current_year)
-                score += max(0, 20 - year_diff) # Proximity to year
+                score += max(0, 20 - year_diff)
+        
+        if actor:
+            media_id = result['id']
+            media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
+            credits = await asyncio.to_thread(media_obj.credits)
+            if 'cast' in credits:
+                for cast_member in credits['cast']:
+                    if actor.lower() in cast_member['name'].lower():
+                        score += 75
+                        break
+
+        if director:
+            media_id = result['id']
+            media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
+            credits = await asyncio.to_thread(media_obj.credits)
+            if 'crew' in credits:
+                for crew_member in credits['crew']:
+                    if crew_member['job'] == 'Director' and director.lower() in crew_member['name'].lower():
+                        score += 75
+                        break
+
+        if genre:
+            if genre.lower() in [g['name'].lower() for g in result.get('genres', [])]:
+                score += 50
 
         if score > best_score:
             best_score = score
             best_match = result
         elif score == best_score and best_match:
-            # Tie-breaker: prefer higher popularity if scores are equal
             if result.get('popularity', 0) > best_match.get('popularity', 0):
                 best_match = result
 
     return best_match
 
-async def search_media_data(media_type: str, title: str, year: str) -> dict:
+async def search_media_data(media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None) -> dict:
     
     search = tmdb.Search()
     result = {
@@ -74,7 +85,7 @@ async def search_media_data(media_type: str, title: str, year: str) -> dict:
         "cast": None
     }
     try:
-        best_match = await _search_media_by_year_and_title(search, media_type, title, year)
+        best_match = await _search_media(search, media_type, title, year, actor, genre, director)
         if best_match:
             media_id = best_match['id']
             media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)

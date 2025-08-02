@@ -91,7 +91,14 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         creative_messages.append({"role": "user", "content": user_message})
         return await _call_llm_api(creative_messages)
 
-    tasks = [search_media_data(media.get("type"), media.get("title"), media.get("year")) for media in media_list]
+    tasks = [search_media_data(
+        media.get("type"), 
+        media.get("title"), 
+        media.get("year"), 
+        media.get("actor"), 
+        media.get("genre"),
+        media.get("director")
+    ) for media in media_list]
     media_data_results = await asyncio.gather(*tasks)
 
     formatted_media_data = []

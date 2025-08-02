@@ -8,7 +8,10 @@ Formato de salida:
     {
       "type": "PELICULA" o "SERIE",
       "title": "Nombre de la Película o Serie",
-      "year": "Año de estreno (si se menciona, opcional)"
+      "year": "Año de estreno (si se menciona, opcional)",
+      "actor": "Nombre del actor (si se menciona, opcional)",
+      "genre": "Género (si se menciona, opcional)",
+      "director": "Nombre del director (si se menciona, opcional)"
     }
   ]
 }
@@ -52,7 +55,10 @@ Formato de salida:
     {
       "type": "PELICULA" o "SERIE",
       "title": "Nombre de la Película o Serie",
-      "year": "Año de estreno (si es relevante, opcional)"
+      "year": "Año de estreno (si es relevante, opcional)",
+      "actor": "Nombre del actor (si se menciona, opcional)",
+      "genre": "Género (si se menciona, opcional)",
+      "director": "Nombre del director (si se menciona, opcional)"
     }
   ]
 }
