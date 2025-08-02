@@ -52,13 +52,12 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
     identification_messages.append({"role": "user", "content": user_message})
 
     identification_response_content = await _call_llm_api(identification_messages, is_json=True)
-    with open("/tmp/identification_log.txt", "w", encoding="utf-8") as f:
-        f.write(identification_response_content)
     try:
         media_list = json.loads(identification_response_content).get("media", [])
     except json.JSONDecodeError:
         media_list = []
 
+    suggestion_response_content = ""
     if not media_list:
         suggestion_messages = [
             {"role": "system", "content": SUGGESTION_PROMPT},
@@ -69,8 +68,6 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         suggestion_messages.append({"role": "user", "content": user_message})
 
         suggestion_response_content = await _call_llm_api(suggestion_messages, is_json=True)
-        with open("/tmp/suggestion_log.txt", "w", encoding="utf-8") as f:
-            f.write(suggestion_response_content)
         try:
             suggested_media_list = json.loads(suggestion_response_content).get("media", [])
         except json.JSONDecodeError:
@@ -79,7 +76,12 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         media_list = suggested_media_list
 
     if not media_list:
-        creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps([], indent=2, ensure_ascii=False))
+        creative_prompt_content = CREATIVE_PROMPT.format(
+            user_query=user_message,
+            media_data=json.dumps([], indent=2, ensure_ascii=False),
+            identification_raw=identification_response_content,
+            suggestion_raw=suggestion_response_content
+        )
         creative_messages = [
             {"role": "system", "content": creative_prompt_content},
         ]
@@ -104,7 +106,12 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             "cast": data.get("cast")
         })
 
-    creative_prompt_content = CREATIVE_PROMPT.format(user_query=user_message, media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False))
+    creative_prompt_content = CREATIVE_PROMPT.format(
+        user_query=user_message,
+        media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False),
+        identification_raw=identification_response_content,
+        suggestion_raw=suggestion_response_content
+    )
     creative_messages = [
         {"role": "system", "content": creative_prompt_content},
     ]

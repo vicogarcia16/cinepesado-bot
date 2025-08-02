@@ -106,6 +106,16 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
 ```json
 {media_data}
 ```
+
+**DEBUG: Identification Raw Response:**
+```json
+{identification_raw}
+```
+
+**DEBUG: Suggestion Raw Response:**
+```json
+{suggestion_raw}
+```
 """
 
 SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
