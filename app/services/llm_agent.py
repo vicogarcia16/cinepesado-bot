@@ -52,6 +52,8 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
     identification_messages.append({"role": "user", "content": user_message})
 
     identification_response_content = await _call_llm_api(identification_messages, is_json=True)
+    with open("/tmp/identification_log.txt", "w", encoding="utf-8") as f:
+        f.write(identification_response_content)
     try:
         media_list = json.loads(identification_response_content).get("media", [])
     except json.JSONDecodeError:
@@ -67,6 +69,8 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         suggestion_messages.append({"role": "user", "content": user_message})
 
         suggestion_response_content = await _call_llm_api(suggestion_messages, is_json=True)
+        with open("/tmp/suggestion_log.txt", "w", encoding="utf-8") as f:
+            f.write(suggestion_response_content)
         try:
             suggested_media_list = json.loads(suggestion_response_content).get("media", [])
         except json.JSONDecodeError:
