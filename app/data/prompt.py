@@ -1,5 +1,5 @@
 IDENTIFICATION_PROMPT = """
-Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). **DEBES responder ÚNICAMENTE con un objeto JSON que contenga una lista de los medios encontrados.**
+Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). **Considera el historial de la conversación para entender el contexto de la solicitud.** DEBES responder ÚNICAMENTE con un objeto JSON que contenga una lista de los medios encontrados.
 
 Formato de salida:
 ```json
@@ -40,7 +40,7 @@ Respuesta: {"media": []}
 """
 
 SUGGESTION_PROMPT = """
-Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada.** Responde ÚNICAMENTE con un objeto JSON que contenga una lista de los medios sugeridos.
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada. Considera el historial de la conversación para entender el contexto de la solicitud y sugerir títulos relevantes.** Responde ÚNICAMENTE con un objeto JSON que contenga una lista de los medios sugeridos.
 
 Formato de salida:
 ```json
