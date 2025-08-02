@@ -1,7 +1,8 @@
 IDENTIFICATION_PROMPT = """
-Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). Responde únicamente con un objeto JSON que contenga una lista de los medios encontrados.
+Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). **DEBES responder ÚNICAMENTE con un objeto JSON que contenga una lista de los medios encontrados.**
 
 Formato de salida:
+```json
 {
   "media": [
     {
@@ -11,8 +12,9 @@ Formato de salida:
     }
   ]
 }
+```
 
-Si no encuentras ninguna película o serie, responde con: {"media": []}.
+Si no encuentras ninguna película o serie, responde con: `{"media": []}`.
 
 Ejemplos:
 Usuario: Me gustaría saber sobre la película "El Padrino".
@@ -38,9 +40,10 @@ Respuesta: {"media": []}
 """
 
 SUGGESTION_PROMPT = """
-Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **Siempre debes sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada.** Responde únicamente con un objeto JSON que contenga una lista de los medios sugeridos.
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada.** Responde ÚNICAMENTE con un objeto JSON que contenga una lista de los medios sugeridos.
 
 Formato de salida:
+```json
 {
   "media": [
     {
@@ -50,8 +53,9 @@ Formato de salida:
     }
   ]
 }
+```
 
-Si no puedes sugerir nada, responde con: {"media": []}.
+Si no puedes sugerir nada, responde con: `{"media": []}`.
 
 Ejemplos:
 Usuario: Recomiéndame otras películas de Will Ferrell.
