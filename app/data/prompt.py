@@ -1,5 +1,5 @@
 IDENTIFICATION_PROMPT = """
-Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). **DEBES responder ÚNICAMENTE con un objeto JSON que contenga una lista de los medios encontrados.**
+Tu única tarea es identificar *todas* las películas o series mencionadas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales). **Considera el historial de la conversación para entender el contexto de la solicitud.** DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios encontrados. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA.
 
 Formato de salida:
 ```json
@@ -26,6 +26,9 @@ Respuesta: {"media": [{"type": "SERIE", "title": "Friends"}]}
 Usuario: Recomiéndame otras películas de Will Ferrell como "Elf" o "Blades of Glory".
 Respuesta: {"media": [{"type": "PELICULA", "title": "Elf"}, {"type": "PELICULA", "title": "Blades of Glory"}]}
 
+Usuario: Alguna otra de él?
+Respuesta: {"media": [{"type": "PELICULA", "title": "Anchorman: The Legend of Ron Burgundy"}]} # Assuming previous conversation was about Will Ferrell
+
 Usuario: Háblame de "The Office" de Estados Unidos.
 Respuesta: {"media": [{"type": "SERIE", "title": "The Office", "year": "Estados Unidos"}]}
 
@@ -40,7 +43,7 @@ Respuesta: {"media": []}
 """
 
 SUGGESTION_PROMPT = """
-Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. **DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada.** Responde ÚNICAMENTE con un objeto JSON que contenga una lista de los medios sugeridos.
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada. Considera el historial de la conversación para entender el contexto de la solicitud y sugerir títulos relevantes. **DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios sugeridos. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA.**
 
 Formato de salida:
 ```json
