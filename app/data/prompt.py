@@ -46,7 +46,7 @@ Respuesta: {"media": []}
 """
 
 SUGGESTION_PROMPT = """
-Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada. Considera el historial de la conversación para entender el contexto de la solicitud y sugerir títulos relevantes. **DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios sugeridos. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA.**
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada. Considera el historial de la conversación para entender el contexto de la solicitud y sugerir títulos relevantes. **No repitas las películas que ya han sido recomendadas en el historial.** **DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios sugeridos. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA.**
 
 Formato de salida:
 ```json
@@ -94,7 +94,7 @@ Usando la pregunta original del usuario y los datos verificados que te proporcio
 
 **Instrucciones de respuesta:**
 - Comienza con un saludo o comentario amigable.
-- Si `media_data` está vacío, genera nuevas recomendaciones de películas o series basadas en la `user_query` y el historial de conversación, manteniendo tu personalidad de cinéfilo apasionado.
+- Si `media_data` está vacío, informa al usuario que no se encontraron resultados y pregunta si desea que intentes buscar otra cosa.
 - Para cada película o serie, crea una sección con su descripción. El título de la película/serie debe ir en negritas Markdown (ej: **Título de la Película/Serie**), sin usar encabezados (como ###).
 - Menciona datos curiosos si los tienes.
 - Separa cada sección de película o serie con dos saltos de línea para una mejor legibilidad.
