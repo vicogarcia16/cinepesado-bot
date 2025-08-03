@@ -117,7 +117,7 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
                     if preferred_videos:
                         result["trailer_link"] = f"https://www.youtube.com/watch?v={preferred_videos[0]['key']}"
 
-            if not isinstance(providers_res, Exception) and 'results' in providers_res and 'PE' in providers_res['results']:
+            if not isinstance(providers_res, Exception) and providers_res is not None and 'results' in providers_res and 'PE' in providers_res['results']:
                 providers = providers_res['results']['PE']
                 result['watch_providers'] = {
                     'buy': [p['provider_name'] for p in providers.get('buy', [])],
