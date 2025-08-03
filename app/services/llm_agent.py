@@ -12,32 +12,39 @@ settings = get_settings()
 
 OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
+OPENROUTER_FALLBACK_MODEL = settings.OPENROUTER_FALLBACK_MODEL
 
 async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json",
-    }
-    data = {
-        "model": OPENROUTER_MODEL,
-        "messages": messages,
-        "temperature": 0.7,
-        "max_tokens": 1500
-    }
-    if is_json:
-        data["response_format"] = {"type": "json_object"}
+    models_to_try = [OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODEL]
+    
+    for model in models_to_try:
+        url = "https://openrouter.ai/api/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        data = {
+            "model": model,
+            "messages": messages,
+            "temperature": 0.7,
+            "max_tokens": 1500
+        }
+        if is_json:
+            data["response_format"] = {"type": "json_object"}
 
-    async with httpx.AsyncClient(timeout=30) as client:
-        try:
-            res = await client.post(url, headers=headers, json=data)
-            res.raise_for_status()
-            return res.json()["choices"][0]["message"]["content"]
-        except (httpx.HTTPStatusError, KeyError, IndexError) as e:
-            error_detail = f"Failed to get a valid response from the LLM API. Error: {e}"
-            if hasattr(res, 'text'):
-                error_detail += f" Raw response: {res.text}"
-            raise LLMApiError(detail=error_detail)
+        async with httpx.AsyncClient(timeout=30) as client:
+            try:
+                res = await client.post(url, headers=headers, json=data)
+                res.raise_for_status()
+                return res.json()["choices"][0]["message"]["content"]
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 429:
+                    continue
+                raise LLMApiError(detail=f"API error for model {model}: {e} - {e.response.text}")
+            except (KeyError, IndexError) as e:
+                raise LLMApiError(detail=f"Failed to parse response from model {model}: {e}")
+
+    raise LLMApiError(detail="All models failed. The primary and fallback models might be rate-limited or unavailable.")
 
 async def get_llm_response(db, chat_id: int, user_message: str) -> str:
     history_response = await chat_history.get_last_chats(db, chat_id)

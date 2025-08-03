@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     TELEGRAM_TOKEN: str
     OPENROUTER_API_KEY: str
     OPENROUTER_MODEL: str
+    OPENROUTER_FALLBACK_MODEL: str
     TELEGRAM_API_URL: str
     BASE_URL: str
     DATABASE_URL: str
