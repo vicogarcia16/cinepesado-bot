@@ -8,9 +8,9 @@ Bot de Telegram que recomienda películas y series, y conversa de forma natural 
 
 * 🤖 Conversación natural: Interpreta preguntas o frases del usuario y responde de manera fluida, con validación previa del mensaje.
 
-* 🎬 **Recomendaciones Enriquecidas:** Sugiere películas y series basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube**, **póster oficial**, **dónde verla** (streaming, alquiler o compra) y **reparto principal**.
+* 🎬 **Recomendaciones Enriquecidas y Precisas:** Sugiere películas y series basadas en gustos, géneros o estados de ánimo. Enriquece cada recomendación añadiendo automáticamente: **tráiler de YouTube (con selección mejorada para mayor precisión)**, **póster oficial**, **dónde verla** (streaming, alquiler o compra) y **reparto principal**. La búsqueda de datos en TMDb ahora es más robusta, manejando títulos ambiguos y asegurando la mayor cantidad de información disponible.
 
-* 🧠 IA potenciada con LLM (OpenRouter): Usa un modelo de lenguaje para generar respuestas contextuales y coherentes.
+* 🧠 IA potenciada con LLM (OpenRouter) **con Respaldo Automático:** Usa un modelo de lenguaje para generar respuestas contextuales y coherentes. Si el modelo principal falla por exceso de peticiones, el bot intentará automáticamente con un modelo de respaldo para asegurar la continuidad del servicio.
 
 * 🖋️ Formato enriquecido: Usa HTML para mejorar la presentación de los mensajes en Telegram (negritas, cursivas, emojis, etc.).
 
@@ -24,7 +24,6 @@ Bot de Telegram que recomienda películas y series, y conversa de forma natural 
 app/
   main.py           # FastAPI app, webhook, ping
   bot/
-    handlers.py     # Lógica para manejar mensajes y respuestas
     telegram.py     # Funciones para enviar mensajes y acciones a Telegram
   core/
     config.py       # Configuración y carga de variables de entorno
@@ -55,6 +54,7 @@ Procfile            # Comando para despliegue en Render
 TELEGRAM_TOKEN=telegram_token
 OPENROUTER_API_KEY=openrouter_key
 OPENROUTER_MODEL=modelo
+OPENROUTER_FALLBACK_MODEL=modelo_de_respaldo # Nuevo: Modelo alternativo para usar si el principal falla
 TMDB_API_KEY=tmdb_key
 TELEGRAM_API_URL=https://api.telegram.org/bot
 BASE_URL=URL de render
@@ -92,10 +92,11 @@ Se expone un endpoint `/ping` para verificar que el bot está activo y responder
 1. Telegram envía un mensaje al webhook (`routes/telegram.py`).
 2. Se valida y limpia el mensaje recibido (`validate_message` en `utils.py`).
 3. Se recupera el historial del chat desde la base de datos (`db/chat_history.py`) para dar contexto.
-4. Se llama a OpenRouter para generar la respuesta (`services/llm_agent.py`).
-5. La respuesta del LLM se procesa para extraer los títulos de las películas y series. Se usa el `tmdb_service` para buscar el tráiler, póster, dónde ver y el reparto de cada una.
+4. Se llama a OpenRouter para generar la respuesta (`services/llm_agent.py`). **Si el modelo principal falla, se intenta con el modelo de respaldo.**
+5. La respuesta del LLM se procesa para extraer los títulos de las películas y series. Se usa el `tmdb_service` para buscar el tráiler, póster, dónde ver y el reparto de cada una. **La búsqueda de datos en TMDb ahora es más precisa y robusta.**
 6. Se almacena el mensaje y respuesta en la base de datos (`db/chat_history.py`).
-7. Se envía la respuesta final, enriquecida con los links, al usuario vía Telegram (`bot/telegram.py`).
+7. Se inserta el nuevo registro en la base de datos (`db/chat_history.py`).
+8. Se envía la respuesta final, enriquecida con los links, al usuario vía Telegram (`bot/telegram.py`).
 
 #### 🧠 Flujo del bot
 ```mermaid
