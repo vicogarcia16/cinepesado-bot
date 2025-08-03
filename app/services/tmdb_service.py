@@ -99,16 +99,22 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
 
             videos = details.get('videos', {}).get('results', [])
             if videos:
-                for video in videos:
-                    if video['site'] == 'YouTube' and video.get('type') in ['Trailer', 'Teaser']:
-                        result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
-                        break
-                
-                if not result["trailer_link"]:
-                    for video in videos:
-                        if video['site'] == 'YouTube':
-                            result["trailer_link"] = f"https://www.youtube.com/watch?v={video['key']}"
-                            break
+                preferred_videos = [
+                    v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()
+                ]
+                if not preferred_videos:
+                    preferred_videos = [
+                        v for v in videos if v['site'] == 'YouTube' and 'tráiler oficial' in v.get('name', '').lower()
+                    ]
+                if not preferred_videos:
+                    preferred_videos = [
+                        v for v in videos if v['site'] == 'YouTube' and v.get('type') in ['Trailer', 'Teaser']
+                    ]
+                if not preferred_videos:
+                    preferred_videos = [v for v in videos if v['site'] == 'YouTube']
+
+                if preferred_videos:
+                    result["trailer_link"] = f"https://www.youtube.com/watch?v={preferred_videos[0]['key']}"
             
             if 'watch/providers' in details and 'results' in details['watch/providers'] and 'PE' in details['watch/providers']['results']:
                 providers = details['watch/providers']['results']['PE']
