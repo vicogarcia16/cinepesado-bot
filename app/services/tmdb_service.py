@@ -79,7 +79,6 @@ async def _search_media(search_client, media_type: str, title: str, year: str, a
     return best_match
 
 async def search_media_data(media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None) -> dict:
-    
     search = tmdb.Search()
     result = {
         "trailer_link": None,
@@ -92,40 +91,42 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
         if best_match:
             media_id = best_match['id']
             media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
-            details = await asyncio.to_thread(media_obj.info, append_to_response='videos,watch/providers,credits')
 
-            if details and details.get('poster_path'):
+            details_task = asyncio.to_thread(media_obj.info)
+            videos_task = asyncio.to_thread(media_obj.videos)
+            providers_task = asyncio.to_thread(media_obj.watch_providers)
+            credits_task = asyncio.to_thread(media_obj.credits)
+
+            details, videos_res, providers_res, credits_res = await asyncio.gather(
+                details_task, videos_task, providers_task, credits_task, return_exceptions=True
+            )
+
+            if not isinstance(details, Exception) and details.get('poster_path'):
                 result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"
 
-            videos = details.get('videos', {}).get('results', [])
-            if videos:
-                preferred_videos = [
-                    v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()
-                ]
-                if not preferred_videos:
-                    preferred_videos = [
-                        v for v in videos if v['site'] == 'YouTube' and 'tráiler oficial' in v.get('name', '').lower()
-                    ]
-                if not preferred_videos:
-                    preferred_videos = [
-                        v for v in videos if v['site'] == 'YouTube' and v.get('type') in ['Trailer', 'Teaser']
-                    ]
-                if not preferred_videos:
-                    preferred_videos = [v for v in videos if v['site'] == 'YouTube']
+            if not isinstance(videos_res, Exception):
+                videos = videos_res.get('results', [])
+                if videos:
+                    preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()]
+                    if not preferred_videos:
+                        preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'tráiler oficial' in v.get('name', '').lower()]
+                    if not preferred_videos:
+                        preferred_videos = [v for v in videos if v['site'] == 'YouTube' and v.get('type') in ['Trailer', 'Teaser']]
+                    if not preferred_videos:
+                        preferred_videos = [v for v in videos if v['site'] == 'YouTube']
+                    if preferred_videos:
+                        result["trailer_link"] = f"https://www.youtube.com/watch?v={preferred_videos[0]['key']}"
 
-                if preferred_videos:
-                    result["trailer_link"] = f"https://www.youtube.com/watch?v={preferred_videos[0]['key']}"
-            
-            if 'watch/providers' in details and 'results' in details['watch/providers'] and 'PE' in details['watch/providers']['results']:
-                providers = details['watch/providers']['results']['PE']
+            if not isinstance(providers_res, Exception) and 'results' in providers_res and 'PE' in providers_res['results']:
+                providers = providers_res['results']['PE']
                 result['watch_providers'] = {
                     'buy': [p['provider_name'] for p in providers.get('buy', [])],
                     'rent': [p['provider_name'] for p in providers.get('rent', [])],
                     'flatrate': [p['provider_name'] for p in providers.get('flatrate', [])]
                 }
 
-            if 'credits' in details and 'cast' in details['credits']:
-                cast_data = details['credits']['cast']
+            if not isinstance(credits_res, Exception) and 'cast' in credits_res:
+                cast_data = credits_res['cast']
                 sorted_cast = sorted(cast_data, key=lambda actor: (actor.get('order', 999), -actor.get('popularity', 0.0)))
                 result['cast'] = [actor['name'] for actor in sorted_cast if actor.get('known_for_department') == 'Acting'][:5]
 
