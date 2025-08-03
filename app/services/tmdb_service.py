@@ -23,6 +23,9 @@ async def _search_media(search_client, media_type: str, title: str, year: str, a
     if response and response.get('results'):
         all_results.extend(response['results'])
 
+    if year:
+        all_results = [r for r in all_results if str(r.get(date_key, ''))[:4] == year]
+
     best_score = -1
 
     for result in all_results:
