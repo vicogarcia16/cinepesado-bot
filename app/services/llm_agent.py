@@ -36,13 +36,28 @@ async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
             try:
                 res = await client.post(url, headers=headers, json=data)
                 res.raise_for_status()
-                return res.json()["choices"][0]["message"]["content"]
+
+                response_json = res.json()
+
+                if "error" in response_json and "message" in response_json["error"]:
+                    error_message = response_json["error"]["message"]
+                    if "rate-limited" in error_message.lower():
+                        continue
+                    raise LLMApiError(detail=f"Model API error {model}: {error_message}")
+
+                if "choices" in response_json and len(response_json["choices"]) > 0:
+                    return response_json["choices"][0]["message"]["content"]
+                else:
+                    raise LLMApiError(detail=f"Unexpected response format from model {model}: 'choices' key missing or empty. Raw response: {res.text}")
+
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 429:
                     continue
-                raise LLMApiError(detail=f"API error for model {model}: {e} - {e.response.text}")
-            except (KeyError, IndexError) as e:
-                raise LLMApiError(detail=f"Failed to parse response from model {model}: {e}")
+                raise LLMApiError(detail=f"HTTP error from model {model} (Status: {e.response.status_code}): {e} - Raw response: {e.response.text}")
+            except json.JSONDecodeError as e:
+                raise LLMApiError(detail=f"Invalid JSON response from model {model}: {e}. Raw response: {res.text}")
+            except Exception as e:
+                raise LLMApiError(detail=f"An unexpected error occurred with model {model}: {e}. Raw response: {res.text if res else 'No response'}")
 
     raise LLMApiError(detail="All models failed. The primary and fallback models might be rate-limited or unavailable.")
 
