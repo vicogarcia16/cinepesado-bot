@@ -30,7 +30,10 @@ Usuario: Recomiéndame otras películas de Will Ferrell como "Elf" o "Blades of 
 Respuesta: {"media": [{"type": "PELICULA", "title": "Elf"}, {"type": "PELICULA", "title": "Blades of Glory"}]}
 
 Usuario: Alguna otra de él?
-Respuesta: {"media": [{"type": "PELICULA", "title": "Anchorman: The Legend of Ron Burgundy"}]} # Assuming previous conversation was about Will Ferrell
+Respuesta: {"media": [{"type": "PELICULA", "title": "Anchorman: The Legend of Ron Burgundy"}]} # Asumiendo que la conversación previa fue sobre Will Ferrell y se infiere el título.
+
+Usuario: Alguna otra como la primera?
+Respuesta: {"media": [{"type": "PELICULA", "title": "Crazy, Stupid, Love", "year": "2011"}]} # Asumiendo que la "primera" película de la conversación anterior fue Crazy, Stupid, Love (2011).
 
 Usuario: Háblame de "The Office" de Estados Unidos.
 Respuesta: {"media": [{"type": "SERIE", "title": "The Office", "year": "Estados Unidos"}]}
@@ -112,6 +115,7 @@ Tu objetivo es generar una respuesta amigable y útil sobre películas o series,
 3.  **Formato General:**
     - Usa Markdown estándar para el texto (`**negrita**`, `*cursiva*`).
     - **NO** uses encabezados (`###`).
+    - **NO** uses separadores como `---`.
     - **NO** generes HTML.
     - Separa la información de cada película/serie con dos saltos de línea para mayor claridad.
 
