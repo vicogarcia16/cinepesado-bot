@@ -102,13 +102,12 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
             )
 
             if not isinstance(details, Exception):
-                if details.get('poster_path'):
-                    result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"
-                result["raw_details_poster_path"] = details.get('poster_path')
+                poster_path = details.get('poster_path')
+                if poster_path:
+                    result["poster_url"] = f"https://image.tmdb.org/t/p/w500{poster_path}"
 
             if not isinstance(videos_res, Exception):
                 videos = videos_res.get('results', [])
-                result["raw_videos_results"] = videos
                 if videos:
                     preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()]
                     if not preferred_videos:
