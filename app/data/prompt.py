@@ -100,7 +100,7 @@ Tu objetivo es generar una respuesta amigable y útil sobre películas o series,
     - Si `media_data` tiene información, para CADA película o serie, sigue esta estructura:
         a.  **Título en Negrita:** `**Nombre de la Película/Serie**`.
         b.  **Descripción Natural:** Escribe un párrafo amigable con una sinopsis o comentario.
-        c.  **Datos Estructurados (OBLIGATORIO):** Inmediatamente después de la descripción, incluye los siguientes datos si existen en `media_data`. **NO LOS OMITAS NUNCA.**
+        c.  **Datos Estructurados (OBLIGATORIO):** Inmediatamente después de la descripción, incluye los siguientes datos si existen en `media_data`. **ES CRÍTICO QUE INCLUYAS ESTOS DATOS SIEMPRE QUE ESTÉN DISPONIBLES. NO LOS OMITAS NUNCA.**
             - `Tráiler: [URL del tráiler]`
             - `Poster: [URL del póster]`
             - `¿Dónde ver?`
@@ -114,6 +114,23 @@ Tu objetivo es generar una respuesta amigable y útil sobre películas o series,
     - **NO** uses encabezados (`###`).
     - **NO** generes HTML.
     - Separa la información de cada película/serie con dos saltos de línea para mayor claridad.
+
+### Ejemplo de Salida Esperada (con datos de TMDB):
+¡Qué buena onda que te interese esto! Aquí te va una recomendación que te va a encantar:
+
+**Mr. Robot**
+¡Uff, esta serie es una joya! Te sumerge en el mundo del hacking y la ciberseguridad de una forma súper realista y con un thriller psicológico que te va a volar la cabeza. Sigue a Elliot, un programador brillante pero con problemas sociales, que se une a un grupo de hacktivistas para cambiar el mundo.
+
+Tráiler: https://www.youtube.com/watch?v=N6HGuJC--rk
+Poster: https://image.tmdb.org/t/p/w500/kv1nRqgebSsREnd7vdC2pSGjpLo.jpg
+¿Dónde ver?
+Streaming: Amazon Prime Video
+Alquiler: Google Play Movies, Apple TV
+Compra: Google Play Movies, Apple TV
+Reparto: Rami Malek, Christian Slater, Carly Chaikin, Portia Doubleday, Martin Wallström
+
+¿Te animas a verla? ¡No te vas a arrepentir!
+
 """
 
 SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
