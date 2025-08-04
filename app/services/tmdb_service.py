@@ -1,14 +1,11 @@
 import asyncio
 import tmdbsimple as tmdb
-import logging
 from app.core.config import get_settings
 from app.core.exceptions import YouTubeSearchError
 
 settings = get_settings()
 TMDB_API_KEY = settings.TMDB_API_KEY
 tmdb.API_KEY = TMDB_API_KEY
-
-logger = logging.getLogger(__name__)
 
 async def _search_media(search_client, media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None):
     search_method = search_client.movie if media_type == 'PELICULA' else search_client.tv
@@ -104,14 +101,10 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
                 details_task, videos_task, providers_task, credits_task, return_exceptions=True
             )
 
-            if isinstance(details, Exception):
-                logger.error(f"Error fetching details for {title} ({media_type}): {details}")
-            elif details and details.get('poster_path'):
+            if not isinstance(details, Exception) and details.get('poster_path'):
                 result["poster_url"] = f"https://image.tmdb.org/t/p/w500{details['poster_path']}"
 
-            if isinstance(videos_res, Exception):
-                logger.error(f"Error fetching videos for {title} ({media_type}): {videos_res}")
-            elif videos_res:
+            if not isinstance(videos_res, Exception):
                 videos = videos_res.get('results', [])
                 if videos:
                     preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()]
@@ -124,9 +117,7 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
                     if preferred_videos:
                         result["trailer_link"] = f"https://www.youtube.com/watch?v={preferred_videos[0]['key']}"
 
-            if isinstance(providers_res, Exception):
-                logger.error(f"Error fetching providers for {title} ({media_type}): {providers_res}")
-            elif providers_res and 'results' in providers_res and 'PE' in providers_res['results']:
+            if not isinstance(providers_res, Exception) and providers_res is not None and 'results' in providers_res and 'PE' in providers_res['results']:
                 providers = providers_res['results']['PE']
                 result['watch_providers'] = {
                     'buy': [p['provider_name'] for p in providers.get('buy', [])],
@@ -134,15 +125,12 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
                     'flatrate': [p['provider_name'] for p in providers.get('flatrate', [])]
                 }
 
-            if isinstance(credits_res, Exception):
-                logger.error(f"Error fetching credits for {title} ({media_type}): {credits_res}")
-            elif credits_res and 'cast' in credits_res:
+            if not isinstance(credits_res, Exception) and 'cast' in credits_res:
                 cast_data = credits_res['cast']
                 sorted_cast = sorted(cast_data, key=lambda actor: (actor.get('order', 999), -actor.get('popularity', 0.0)))
                 result['cast'] = [actor['name'] for actor in sorted_cast if actor.get('known_for_department') == 'Acting'][:5]
 
     except Exception as e:
-        logger.error(f"Unhandled exception in search_media_data for {title} ({media_type}): {e}")
         raise YouTubeSearchError(detail=f"Failed to search TMDb for movie data: {e}")
 
     return result
