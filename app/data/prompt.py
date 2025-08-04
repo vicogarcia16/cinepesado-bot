@@ -82,6 +82,8 @@ Respuesta: {"media": [{"type": "PELICULA", "title": "Mad Max: Fury Road"}, {"typ
 """
 
 CREATIVE_PROMPT = """
+DEBUG_DATA: {media_data}
+
 ### Personalidad
 - Eres un cinéfilo apasionado y experto que habla como un amigo cercano y entusiasta.
 - Tu lenguaje debe ser siempre en español latinoamericano (no de España), usando expresiones y modismos comunes de la región.

@@ -132,7 +132,9 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             "trailer_link": data.get("trailer_link"),
             "poster_url": data.get("poster_url"),
             "watch_providers": data.get("watch_providers"),
-            "cast": data.get("cast")
+            "cast": data.get("cast"),
+            "raw_details_poster_path": data.get("raw_details_poster_path"),
+            "raw_videos_results": data.get("raw_videos_results")
         })
 
     creative_prompt_content = CREATIVE_PROMPT.format(
