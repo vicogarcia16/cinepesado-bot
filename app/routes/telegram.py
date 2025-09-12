@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Request, BackgroundTasks
 from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
@@ -8,6 +9,10 @@ from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import AsyncSessionLocal
 import asyncio
 from app.services.llm_agent import get_llm_response
+
+# Configura el logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/telegram", 
                    tags=["telegram"], 
@@ -26,16 +31,19 @@ async def process_message_task(chat_id: int, text: str):
         typing_task = asyncio.create_task(keep_typing())
         try:
             response = await get_llm_response(db, chat_id, full_text)
+            await create_chat_history(db, 
+                                      ChatHistoryCreate(
+                                          chat_id=chat_id,
+                                          message=text, 
+                                          response=response
+                                      ))
+            await send_message(chat_id, parse_message(response))
+        except Exception as e:
+            logger.error(f"Error processing message for chat_id {chat_id}: {e}", exc_info=True)
+            error_message = "¡Uff! 🤯 Algo salió mal y no pude procesar tu solicitud. Por favor, inténtalo de nuevo."
+            await send_message(chat_id, error_message)
         finally:
             typing_task.cancel()
-
-        await create_chat_history(db, 
-                                  ChatHistoryCreate(
-                                      chat_id=chat_id,
-                                      message=text, 
-                                      response=response
-                                  ))
-        await send_message(chat_id, parse_message(response))
 
 @router.get("/history/{chat_id}", response_model=ChatHistoryListResponse)
 async def get_history(chat_id: int):
