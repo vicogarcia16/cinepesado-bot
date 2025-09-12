@@ -32,7 +32,7 @@ async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
         if is_json:
             data["response_format"] = {"type": "json_object"}
 
-        async with httpx.AsyncClient(timeout=30) as client:
+        async with httpx.AsyncClient(timeout=60) as client:
             try:
                 res = await client.post(url, headers=headers, json=data)
                 res.raise_for_status()
