@@ -1,6 +1,7 @@
 import httpx
 import json
 import asyncio
+from functools import partial
 from app.core.config import get_settings
 from app.data.prompt import IDENTIFICATION_PROMPT, CREATIVE_PROMPT, SUGGESTION_PROMPT
 from app.core.exceptions import LLMApiError
@@ -113,14 +114,18 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         creative_messages.append({"role": "user", "content": user_message})
         return await _call_llm_api(creative_messages)
 
-    tasks = [search_media_data(
-        media.get("type"), 
-        media.get("title"), 
-        media.get("year"), 
-        media.get("actor"), 
-        media.get("genre"),
-        media.get("director")
-    ) for media in media_list]
+    loop = asyncio.get_running_loop()
+    tasks = []
+    for media in media_list:
+        func = partial(search_media_data, 
+                       media_type=media.get("type"), 
+                       title=media.get("title"), 
+                       year=media.get("year"), 
+                       actor=media.get("actor"), 
+                       genre=media.get("genre"),
+                       director=media.get("director"))
+        tasks.append(loop.run_in_executor(None, func))
+
     media_data_results = await asyncio.gather(*tasks)
 
     formatted_media_data = []

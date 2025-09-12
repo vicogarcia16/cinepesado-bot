@@ -1,4 +1,3 @@
-import asyncio
 import tmdbsimple as tmdb
 from app.core.config import get_settings
 from app.core.exceptions import YouTubeSearchError
@@ -7,7 +6,7 @@ settings = get_settings()
 TMDB_API_KEY = settings.TMDB_API_KEY
 tmdb.API_KEY = TMDB_API_KEY
 
-async def _search_media(search_client, media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None):
+def _search_media(search_client, media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None):
     search_method = search_client.movie if media_type == 'PELICULA' else search_client.tv
     date_key = 'release_date' if media_type == 'PELICULA' else 'first_air_date'
     
@@ -17,7 +16,7 @@ async def _search_media(search_client, media_type: str, title: str, year: str, a
     if year:
         search_params["year"] = year
 
-    response = await asyncio.to_thread(search_method, **search_params)
+    response = search_method(**search_params)
 
     all_results = []
     if response and response.get('results'):
@@ -48,7 +47,7 @@ async def _search_media(search_client, media_type: str, title: str, year: str, a
         if actor:
             media_id = result['id']
             media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
-            credits = await asyncio.to_thread(media_obj.credits)
+            credits = media_obj.credits()
             if 'cast' in credits:
                 for cast_member in credits['cast']:
                     if actor.lower() in cast_member['name'].lower():
@@ -58,7 +57,7 @@ async def _search_media(search_client, media_type: str, title: str, year: str, a
         if director:
             media_id = result['id']
             media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
-            credits = await asyncio.to_thread(media_obj.credits)
+            credits = media_obj.credits()
             if 'crew' in credits:
                 for crew_member in credits['crew']:
                     if crew_member['job'] == 'Director' and director.lower() in crew_member['name'].lower():
@@ -78,7 +77,7 @@ async def _search_media(search_client, media_type: str, title: str, year: str, a
 
     return best_match
 
-async def search_media_data(media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None) -> dict:
+def search_media_data(media_type: str, title: str, year: str, actor: str = None, genre: str = None, director: str = None) -> dict:
     search = tmdb.Search()
     result = {
         "trailer_link": None,
@@ -87,26 +86,22 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
         "cast": None
     }
     try:
-        best_match = await _search_media(search, media_type, title, year, actor, genre, director)
+        best_match = _search_media(search, media_type, title, year, actor, genre, director)
         if best_match:
             media_id = best_match['id']
             media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
 
-            details_task = asyncio.to_thread(media_obj.info)
-            videos_task = asyncio.to_thread(media_obj.videos)
-            providers_task = asyncio.to_thread(media_obj.watch_providers)
-            credits_task = asyncio.to_thread(media_obj.credits)
+            details = media_obj.info()
+            videos_res = media_obj.videos()
+            providers_res = media_obj.watch_providers()
+            credits_res = media_obj.credits()
 
-            details, videos_res, providers_res, credits_res = await asyncio.gather(
-                details_task, videos_task, providers_task, credits_task, return_exceptions=True
-            )
-
-            if not isinstance(details, Exception):
+            if details:
                 poster_path = details.get('poster_path')
                 if poster_path:
                     result["poster_url"] = f"https://image.tmdb.org/t/p/w500{poster_path}"
 
-            if not isinstance(videos_res, Exception):
+            if videos_res:
                 videos = videos_res.get('results', [])
                 if videos:
                     preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()]
@@ -119,7 +114,7 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
                     if preferred_videos:
                         result["trailer_link"] = f"https://www.youtube.com/watch?v={preferred_videos[0]['key']}"
 
-            if not isinstance(providers_res, Exception) and providers_res is not None and 'results' in providers_res and 'PE' in providers_res['results']:
+            if providers_res and 'results' in providers_res and 'PE' in providers_res['results']:
                 providers = providers_res['results']['PE']
                 result['watch_providers'] = {
                     'buy': [p['provider_name'] for p in providers.get('buy', [])],
@@ -127,7 +122,7 @@ async def search_media_data(media_type: str, title: str, year: str, actor: str =
                     'flatrate': [p['provider_name'] for p in providers.get('flatrate', [])]
                 }
 
-            if not isinstance(credits_res, Exception) and 'cast' in credits_res:
+            if credits_res and 'cast' in credits_res:
                 cast_data = credits_res['cast']
                 sorted_cast = sorted(cast_data, key=lambda actor: (actor.get('order', 999), -actor.get('popularity', 0.0)))
                 result['cast'] = [actor['name'] for actor in sorted_cast if actor.get('known_for_department') == 'Acting'][:5]
