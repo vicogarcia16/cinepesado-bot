@@ -1,5 +1,5 @@
 IDENTIFICATION_PROMPT = """
-Tu única tarea es identificar *todas* las películas o series mencionadas o implícitas en el texto del usuario, sin importar el contexto (incluso si son "otras" recomendaciones o menciones casuales, o si la consulta es sobre un tema general). **Considera el historial de la conversación para entender el contexto de la solicitud.** DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios encontrados. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA. NO INCLUYAS NINGÚN TEXTO ADICIONAL O CONVERSACIONAL FUERA DEL OBJETO JSON.
+Tu única tarea es identificar *todas* las películas o series mencionadas o implícitas en el texto del usuario, sin importar el contexto. **Considera el historial de la conversación para entender el contexto, pero prioriza la última solicitud del usuario.** DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios encontrados. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA. NO INCLUYAS NINGÚN TEXTO ADICIONAL O CONVERSACIONAL FUERA DEL OBJETO JSON.
 
 Formato de salida:
 ```json
@@ -49,7 +49,7 @@ Respuesta: {"media": []}
 """
 
 SUGGESTION_PROMPT = """
-Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada. Considera el historial de la conversación para entender el contexto de la solicitud y sugerir títulos relevantes. **No repitas las películas que ya han sido recomendadas en el historial.** **DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios sugeridos. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA. NO INCLUYAS NINGÚN TEXTO ADICIONAL O CONVERSACIONAL FUERA DEL OBJETO JSON.** Si la solicitud es muy general y no hay un contexto claro, sugiere 3 películas o series populares y bien conocidas.
+Tu tarea es sugerir películas o series basadas en la solicitud del usuario y el historial de la conversación. DEBES sugerir al menos 3 títulos populares y bien conocidos para los que es probable que haya información detallada. **Considera el historial de la conversación para entender el contexto, pero prioriza la última solicitud del usuario.** **No repitas las películas que ya han sido recomendadas en el historial.** DEBES responder ÚNICAMENTE con un objeto JSON válido que contenga una lista de los medios sugeridos. CUALQUIER OTRA RESPUESTA ES INCORRECTA Y SERÁ IGNORADA. NO INCLUYAS NINGÚN TEXTO ADICIONAL O CONVERSACIONAL FUERA DEL OBJETO JSON. Si la solicitud es muy general y no hay un contexto claro, sugiere 3 películas o series populares y bien conocidas.
 
 Formato de salida:
 ```json
@@ -93,7 +93,8 @@ Tu única tarea es generar una respuesta estructurada para CADA película o seri
 2.  Para CADA película o serie en `media_data`, sigue esta estructura EXACTA:
     a.  **Título en Negrita:** `**Nombre de la Película/Serie**`.
     b.  **Descripción:** Escribe un párrafo de 2-3 frases con una sinopsis o comentario.
-    c.  **Datos Estructurados:** Inmediatamente después de la descripción, incluye los siguientes datos. **DEBES incluir el Tráiler y el Poster si existen en `media_data`.**
+    c.  **Datos Estructurados:** Inmediatamente después de la descripción, incluye los siguientes datos. **Para CADA película/serie, DEBES incluir OBLIGATORIAMENTE el enlace a TMDB, el tráiler y el póster si están disponibles en `media_data`. Es un requisito indispensable.**
+        - `TMDB: [URL de la película o serie en TMDB]`
         - `Tráiler: [URL del tráiler]`
         - `Poster: [URL del poster]`
         - `Dónde ver: [lista de plataformas de streaming, alquiler y compra]`
