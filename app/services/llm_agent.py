@@ -23,7 +23,7 @@ def escape_markdown_v2(text: str) -> str:
         return ""
     # Chars to escape are: _ * [ ] ( ) ~ ` > # + - = | { } . !
     escape_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
+    return re.sub(f'([{re.escape(escape_chars)}])', r'\\1', text)
 
 async def _call_llm_api(messages: list[dict], is_json: bool = False, temperature: float = 0.7) -> str:
     models_to_try = [OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODEL]
@@ -177,7 +177,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         
         title_to_display = f"**{escaped_title}**"
         if raw_year and raw_year not in raw_title:
-            title_to_display = f"**{escaped_title} ({escape_markdown_v2(raw_year)})**"
+            title_to_display = f"**{escaped_title} \\({escape_markdown_v2(raw_year)}\\)" # Corrected escaping for parentheses
 
         response_parts.append(title_to_display)
         response_parts.append(overview)
@@ -223,7 +223,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         response_parts.append("\n---\n")
 
     final_response = "\n".join(response_parts).strip()
-    if final_response.endswith("---\n"):
+    if final_response.endswith("\n---\n"):
         final_response = final_response[:-4].strip()
 
     return final_response
