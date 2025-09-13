@@ -16,7 +16,7 @@ def _search_media(search_client, media_type: str, title: str, year: str, actor: 
     if year:
         search_params["year"] = year
 
-    response = search_method(**search_params)
+    response = search_method(language='es-LA', **search_params)
 
     all_results = []
     if response and response.get('results'):
@@ -97,10 +97,10 @@ def search_media_data(media_type: str, title: str, year: str, actor: str = None,
             url_path = "movie" if media_type == 'PELICULA' else "tv"
             result["tmdb_url"] = f"{tmdb_base_url}{url_path}/{media_id}"
 
-            details = media_obj.info()
-            videos_res = media_obj.videos()
-            providers_res = media_obj.watch_providers()
-            credits_res = media_obj.credits()
+            details = media_obj.info(language='es-LA')
+            videos_res = media_obj.videos(language='es-LA')
+            providers_res = media_obj.watch_providers(language='es-LA')
+            credits_res = media_obj.credits(language='es-LA')
 
             if details:
                 poster_path = details.get('poster_path')
