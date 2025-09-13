@@ -106,6 +106,7 @@ def search_media_data(media_type: str, title: str, year: str, actor: str = None,
                 poster_path = details.get('poster_path')
                 if poster_path:
                     result["poster_url"] = f"https://image.tmdb.org/t/p/w500{poster_path}"
+                result["overview"] = details.get('overview')
 
             if videos_res:
                 videos = videos_res.get('results', [])
