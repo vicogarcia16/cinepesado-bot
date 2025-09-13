@@ -83,13 +83,19 @@ def search_media_data(media_type: str, title: str, year: str, actor: str = None,
         "trailer_link": None,
         "poster_url": None,
         "watch_providers": None,
-        "cast": None
+        "cast": None,
+        "tmdb_url": None
     }
     try:
         best_match = _search_media(search, media_type, title, year, actor, genre, director)
         if best_match:
             media_id = best_match['id']
             media_obj = tmdb.Movies(media_id) if media_type == 'PELICULA' else tmdb.TV(media_id)
+
+            # Construct TMDB URL
+            tmdb_base_url = "https://www.themoviedb.org/"
+            url_path = "movie" if media_type == 'PELICULA' else "tv"
+            result["tmdb_url"] = f"{tmdb_base_url}{url_path}/{media_id}"
 
             details = media_obj.info()
             videos_res = media_obj.videos()
