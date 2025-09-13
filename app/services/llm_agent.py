@@ -1,6 +1,7 @@
 import httpx
 import json
 import asyncio
+import logging
 from functools import partial
 from app.core.config import get_settings
 from app.data.prompt import IDENTIFICATION_PROMPT, CREATIVE_PROMPT, SUGGESTION_PROMPT
@@ -53,6 +54,8 @@ async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
 
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 429:
+                    logging.warning(f"Rate limit exceeded for model {model}. Waiting 2 seconds before trying next model.")
+                    await asyncio.sleep(2)
                     continue
                 raise LLMApiError(detail=f"HTTP error from model {model} (Status: {e.response.status_code}): {e} - Raw response: {e.response.text}")
             except json.JSONDecodeError as e:
