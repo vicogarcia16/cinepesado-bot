@@ -158,13 +158,13 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
 
     response_parts = []
     intro = CREATIVE_PROMPT.split('**INSTRUCCIONES ESTRICTAS:**')[0].strip()
-    response_parts.append(escape_markdown_v2(intro))
+    response_parts.append(intro)
     response_parts.append('')
 
     for media_item in formatted_media_data:
         raw_title = media_item.get("title", "Título desconocido")
         raw_year = str(media_item.get("year", ""))
-        overview = escape_markdown_v2(media_item.get("overview", "Sin descripción disponible."))
+        overview = media_item.get("overview", "Sin descripción disponible.")
         
         tmdb_url = media_item.get("tmdb_url", "No disponible")
         poster_url = media_item.get("poster_url", "No disponible")
@@ -173,11 +173,9 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         watch_providers = media_item.get("watch_providers")
         cast = media_item.get("cast")
 
-        escaped_title = escape_markdown_v2(raw_title)
-        
-        title_to_display = f"**{escaped_title}**"
+        title_to_display = f"**{raw_title}**"
         if raw_year and raw_year not in raw_title:
-            title_to_display = f"**{escaped_title} \\({escape_markdown_v2(raw_year)}\\)"
+            title_to_display = f"**{raw_title} ({raw_year})**"
 
         response_parts.append(title_to_display)
         response_parts.append(overview)
@@ -198,13 +196,13 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         if watch_providers:
             providers_list = []
             if watch_providers.get("flatrate"):
-                providers = ", ".join([escape_markdown_v2(p) for p in watch_providers['flatrate']])
+                providers = ", ".join(watch_providers['flatrate'])
                 providers_list.append(f"Streaming: {providers}")
             if watch_providers.get("buy"):
-                providers = ", ".join([escape_markdown_v2(p) for p in watch_providers['buy']])
+                providers = ", ".join(watch_providers['buy'])
                 providers_list.append(f"Comprar: {providers}")
             if watch_providers.get("rent"):
-                providers = ", ".join([escape_markdown_v2(p) for p in watch_providers['rent']])
+                providers = ", ".join(watch_providers['rent'])
                 providers_list.append(f"Alquilar: {providers}")
             
             if providers_list:
@@ -215,15 +213,14 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             response_parts.append("Dónde ver: No disponible")
 
         if cast:
-            escaped_cast = [escape_markdown_v2(actor) for actor in cast]
-            response_parts.append(f"Reparto: {', '.join(escaped_cast)}")
+            response_parts.append(f"Reparto: {', '.join(cast)}")
         else:
             response_parts.append("Reparto: No disponible")
         
         response_parts.append("\n---\n")
 
     final_response = "\n".join(response_parts).strip()
-    if final_response.endswith("\n---\n"):
+    if final_response.endswith("---\n"):
         final_response = final_response[:-4].strip()
 
     return final_response

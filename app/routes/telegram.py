@@ -8,7 +8,7 @@ from app.db.chat_history import create_chat_history, get_last_chats
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import AsyncSessionLocal
 import asyncio
-from app.services.llm_agent import get_llm_response
+from app.services.llm_agent import get_llm_response, escape_markdown_v2
 
 # Configura el logging
 logging.basicConfig(level=logging.INFO)
@@ -35,7 +35,8 @@ async def process_message_task(chat_id: int, text: str):
                                           message=text, 
                                           response=response
                                       ))
-            await send_message(chat_id, response, parse_mode="MarkdownV2")
+            escaped_response = escape_markdown_v2(response)
+            await send_message(chat_id, escaped_response, parse_mode="MarkdownV2")
         except Exception as e:
             logger.error(f"Error processing message for chat_id {chat_id}: {e}", exc_info=True)
             error_message = "¡Uff! 🤯 Algo salió mal y no pude procesar tu solicitud. Por favor, inténtalo de nuevo."
