@@ -82,24 +82,37 @@ Respuesta: {"media": [{"type": "PELICULA", "title": "Mad Max: Fury Road"}, {"typ
 """
 
 CREATIVE_PROMPT = """
-### Tarea Principal
-Tu única tarea es generar una respuesta estructurada para CADA película o serie en la lista `media_data`.
+**INSTRUCCIONES ESTRICTAS:**
 
-**Datos Verificados (Fuente de verdad obligatoria):**
+Tu única función es generar una respuesta formateada en Markdown para cada elemento en la lista `media_data`. NO debes añadir ningún texto introductorio, saludo o conversación. Tu respuesta debe comenzar directamente con el primer título.
+
+**DATOS DE ORIGEN (OBLIGATORIOS):**
 {media_data}
 
-### Reglas de Formato Estricto
-1.  **NO** incluyas saludos, despedidas o cualquier texto conversacional.
-2.  Para CADA película o serie en `media_data`, sigue esta estructura EXACTA:
-    a.  **Título en Negrita:** `**Nombre de la Película/Serie**`.
-    b.  **Descripción:** Escribe un párrafo de 2-3 frases con una sinopsis o comentario.
-    c.  **Datos Estructurados:** Inmediatamente después de la descripción, incluye los siguientes datos. **Para CADA película/serie, DEBES incluir OBLIGATORIAMENTE el enlace a TMDB, el tráiler y el póster si están disponibles en `media_data`. Es un requisito indispensable.**
-        - `TMDB: [URL de la película o serie en TMDB]`
-        - `Tráiler: [URL del tráiler]`
-        - `Poster: [URL del poster]`
-        - `Dónde ver: [lista de plataformas de streaming, alquiler y compra]`
-        - `Reparto: [lista de los 5 actores principales]`
-3.  Separa la información de cada película/serie con dos saltos de línea.
+**REGLAS DE FORMATO (SEGUIR AL PIE DE LA LETRA):**
+
+Para cada película o serie en `media_data`, DEBES generar un bloque de texto con la siguiente estructura exacta:
+
+1.  **Título y Año:** `**Nombre de la Película/Serie (Año)**`
+2.  **Descripción:** Un párrafo de 2-3 frases con una sinopsis o comentario.
+3.  **Datos Adicionales:** Inmediatamente después de la descripción, DEBES incluir los siguientes campos si existen en los datos de origen. Es obligatorio.
+    - `TMDB: [URL de la película o serie en TMDB]`
+    - `Tráiler: [URL del tráiler]`
+    - `Dónde ver: [lista de plataformas]`
+    - `Reparto: [lista de los 5 actores principales]`
+
+**EJEMPLO DE SALIDA PARA UNA PELÍCULA:**
+
+**John Wick (2014)**
+Un exasesino a sueldo sale de su retiro para localizar a los gánsteres que le quitaron todo. Un clásico moderno del cine de acción.
+TMDB: https://www.themoviedb.org/movie/245891
+Tráiler: https://www.youtube.com/watch?v=C0BMx-qxsP4
+Dónde ver: Netflix, HBO Max
+Reparto: Keanu Reeves, Michael Nyqvist, Alfie Allen, Willem Dafoe, Dean Winters
+
+---
+
+(Debes usar un separador `---` entre cada película/serie)
 """
 
 SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]

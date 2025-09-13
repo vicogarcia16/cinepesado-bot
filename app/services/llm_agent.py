@@ -137,6 +137,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             "title": media.get("title"),
             "type": media.get("type"),
             "year": media.get("year"),
+            "tmdb_url": data.get("tmdb_url"),
             "trailer_link": data.get("trailer_link"),
             "poster_url": data.get("poster_url"),
             "watch_providers": data.get("watch_providers"),
@@ -146,10 +147,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         })
 
     creative_prompt_content = CREATIVE_PROMPT.format(
-        user_query=user_message,
-        media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False),
-        identification_raw=identification_response_content,
-        suggestion_raw=suggestion_response_content
+        media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False)
     )
     creative_messages = [
         {"role": "system", "content": creative_prompt_content},
