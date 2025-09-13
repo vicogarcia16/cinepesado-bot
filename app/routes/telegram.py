@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Request, BackgroundTasks
 from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
-from app.core.utils import validate_message, is_saludo, parse_message
+from app.core.utils import validate_message, is_saludo
 from app.data.prompt import SALUDO_INICIAL
 from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
@@ -37,11 +37,11 @@ async def process_message_task(chat_id: int, text: str):
                                           message=text, 
                                           response=response
                                       ))
-            await send_message(chat_id, parse_message(response))
+            await send_message(chat_id, response, parse_mode="MarkdownV2")
         except Exception as e:
             logger.error(f"Error processing message for chat_id {chat_id}: {e}", exc_info=True)
             error_message = "¡Uff! 🤯 Algo salió mal y no pude procesar tu solicitud. Por favor, inténtalo de nuevo."
-            await send_message(chat_id, error_message)
+            await send_message(chat_id, error_message, parse_mode=None)
         finally:
             typing_task.cancel()
 
@@ -61,7 +61,7 @@ async def telegram_webhook(req: Request, background_tasks: BackgroundTasks):
     chat_id, text = validate_message(message)
 
     if is_saludo(text):
-        await send_message(chat_id, SALUDO_INICIAL)
+        await send_message(chat_id, SALUDO_INICIAL, parse_mode=None)
     else:
         background_tasks.add_task(process_message_task, chat_id, text)
 

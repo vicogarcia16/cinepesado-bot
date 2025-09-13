@@ -2,6 +2,7 @@ import httpx
 import json
 import asyncio
 import logging
+import re
 from functools import partial
 from app.core.config import get_settings
 from app.data.prompt import IDENTIFICATION_PROMPT, CREATIVE_PROMPT, SUGGESTION_PROMPT
@@ -15,6 +16,14 @@ settings = get_settings()
 OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
 OPENROUTER_FALLBACK_MODEL = settings.OPENROUTER_FALLBACK_MODEL
+
+def escape_markdown_v2(text: str) -> str:
+    """Escapes text for Telegram's MarkdownV2 parser."""
+    if not isinstance(text, str):
+        return ""
+    # Chars to escape are: _ * [ ] ( ) ~ ` > # + - = | { } . !
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
 
 async def _call_llm_api(messages: list[dict], is_json: bool = False, temperature: float = 0.7) -> str:
     models_to_try = [OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODEL]
@@ -148,34 +157,44 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         })
 
     response_parts = []
+    intro = CREATIVE_PROMPT.split('**INSTRUCCIONES ESTRICTAS:**')[0].strip()
+    response_parts.append(escape_markdown_v2(intro))
+    response_parts.append('')
+
     for media_item in formatted_media_data:
-        title = media_item.get("title", "Título desconocido")
-        year = media_item.get("year", "")
-        overview = media_item.get("overview", "Sin descripción disponible.")
+        title = escape_markdown_v2(media_item.get("title", "Título desconocido"))
+        year = escape_markdown_v2(str(media_item.get("year", "")))
+        overview = escape_markdown_v2(media_item.get("overview", "Sin descripción disponible."))
+        
         tmdb_url = media_item.get("tmdb_url", "No disponible")
         poster_url = media_item.get("poster_url", "No disponible")
         trailer_link = media_item.get("trailer_link", "No disponible")
+        
         watch_providers = media_item.get("watch_providers")
         cast = media_item.get("cast")
 
         response_parts.append(f"**{title} ({year})**")
         response_parts.append(overview)
 
-        if tmdb_url != "No disponible":
-            response_parts.append(f"TMDB: {tmdb_url}")
         if poster_url != "No disponible":
-            response_parts.append(f"Póster: {poster_url}")
+            response_parts.append(f"[Póster]({poster_url})")
+        if tmdb_url != "No disponible":
+            response_parts.append(f"TMDB: {escape_markdown_v2(tmdb_url)}")
         if trailer_link != "No disponible":
-            response_parts.append(f"Tráiler: {trailer_link}")
+            response_parts.append(f"[Tráiler]({trailer_link})")
         
         if watch_providers:
             providers_list = []
             if watch_providers.get("flatrate"):
-                providers_list.append(f"Streaming: {', '.join(watch_providers['flatrate'])}")
+                providers = ", ".join([escape_markdown_v2(p) for p in watch_providers['flatrate']])
+                providers_list.append(f"Streaming: {providers}")
             if watch_providers.get("buy"):
-                providers_list.append(f"Comprar: {', '.join(watch_providers['buy'])}")
+                providers = ", ".join([escape_markdown_v2(p) for p in watch_providers['buy']])
+                providers_list.append(f"Comprar: {providers}")
             if watch_providers.get("rent"):
-                providers_list.append(f"Alquilar: {', '.join(watch_providers['rent'])}")
+                providers = ", ".join([escape_markdown_v2(p) for p in watch_providers['rent']])
+                providers_list.append(f"Alquilar: {providers}")
+            
             if providers_list:
                 response_parts.append(f"Dónde ver: {'; '.join(providers_list)}")
             else:
@@ -184,14 +203,15 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             response_parts.append("Dónde ver: No disponible")
 
         if cast:
-            response_parts.append(f"Reparto: {', '.join(cast)}")
+            escaped_cast = [escape_markdown_v2(actor) for actor in cast]
+            response_parts.append(f"Reparto: {', '.join(escaped_cast)}")
         else:
             response_parts.append("Reparto: No disponible")
         
-        response_parts.append("\n---") # Separator
+        response_parts.append("\n---\n")
 
     final_response = "\n".join(response_parts).strip()
-    if final_response.endswith("---"):
-        final_response = final_response[:-3].strip() # Remove trailing separator if it's the last item
+    if final_response.endswith("---\n"):
+        final_response = final_response[:-4].strip()
 
     return final_response
