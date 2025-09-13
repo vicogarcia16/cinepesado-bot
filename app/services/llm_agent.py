@@ -16,7 +16,7 @@ OPENROUTER_API_KEY = settings.OPENROUTER_API_KEY
 OPENROUTER_MODEL = settings.OPENROUTER_MODEL
 OPENROUTER_FALLBACK_MODEL = settings.OPENROUTER_FALLBACK_MODEL
 
-async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
+async def _call_llm_api(messages: list[dict], is_json: bool = False, temperature: float = 0.7) -> str:
     models_to_try = [OPENROUTER_MODEL, OPENROUTER_FALLBACK_MODEL]
     
     for model in models_to_try:
@@ -28,7 +28,7 @@ async def _call_llm_api(messages: list[dict], is_json: bool = False) -> str:
         data = {
             "model": model,
             "messages": messages,
-            "temperature": 0.7,
+            "temperature": temperature,
             "max_tokens": 1500
         }
         if is_json:
@@ -157,6 +157,6 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         creative_messages.append({"role": "assistant", "content": entry.response})
     creative_messages.append({"role": "user", "content": user_message})
 
-    final_response = await _call_llm_api(creative_messages)
+    final_response = await _call_llm_api(creative_messages, temperature=0.2)
 
     return final_response.strip()
