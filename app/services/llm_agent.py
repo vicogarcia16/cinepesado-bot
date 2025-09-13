@@ -147,17 +147,51 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
             "overview": data.get("overview")
         })
 
-    creative_prompt_content = CREATIVE_PROMPT.format(
-        media_data=json.dumps(formatted_media_data, indent=2, ensure_ascii=False)
-    )
-    creative_messages = [
-        {"role": "system", "content": creative_prompt_content},
-    ]
-    for entry in history:
-        creative_messages.append({"role": "user", "content": entry.message})
-        creative_messages.append({"role": "assistant", "content": entry.response})
-    creative_messages.append({"role": "user", "content": user_message})
+    response_parts = []
+    for media_item in formatted_media_data:
+        title = media_item.get("title", "Título desconocido")
+        year = media_item.get("year", "")
+        overview = media_item.get("overview", "Sin descripción disponible.")
+        tmdb_url = media_item.get("tmdb_url", "No disponible")
+        poster_url = media_item.get("poster_url", "No disponible")
+        trailer_link = media_item.get("trailer_link", "No disponible")
+        watch_providers = media_item.get("watch_providers")
+        cast = media_item.get("cast")
 
-    final_response = await _call_llm_api(creative_messages, temperature=0.2)
+        response_parts.append(f"**{title} ({year})**")
+        response_parts.append(overview)
 
-    return final_response.strip()
+        if tmdb_url != "No disponible":
+            response_parts.append(f"TMDB: {tmdb_url}")
+        if poster_url != "No disponible":
+            response_parts.append(f"Póster: {poster_url}")
+        if trailer_link != "No disponible":
+            response_parts.append(f"Tráiler: {trailer_link}")
+        
+        if watch_providers:
+            providers_list = []
+            if watch_providers.get("flatrate"):
+                providers_list.append(f"Streaming: {', '.join(watch_providers['flatrate'])}")
+            if watch_providers.get("buy"):
+                providers_list.append(f"Comprar: {', '.join(watch_providers['buy'])}")
+            if watch_providers.get("rent"):
+                providers_list.append(f"Alquilar: {', '.join(watch_providers['rent'])}")
+            if providers_list:
+                response_parts.append(f"Dónde ver: {'; '.join(providers_list)}")
+            else:
+                response_parts.append("Dónde ver: No disponible")
+        else:
+            response_parts.append("Dónde ver: No disponible")
+
+        if cast:
+            response_parts.append(f"Reparto: {', '.join(cast)}")
+        else:
+            response_parts.append("Reparto: No disponible")
+        
+        response_parts.append("\n---") # Separator
+
+    final_response = "\n".join(response_parts).strip()
+    if final_response.endswith("---"):
+        final_response = final_response[:-3].strip() # Remove trailing separator if it's the last item
+
+    return final_response
