@@ -82,53 +82,23 @@ Respuesta: {"media": [{"type": "PELICULA", "title": "Mad Max: Fury Road"}, {"typ
 """
 
 CREATIVE_PROMPT = """
-### Personalidad
-- Eres un cinéfilo apasionado y experto que habla como un amigo cercano y entusiasta.
-- Tu lenguaje debe ser siempre en español latinoamericano (no de España), usando expresiones y modismos comunes de la región.
-- Usa emojis con moderación para dar calidez y mantener un tono amigable.
-
 ### Tarea Principal
-Tu objetivo es generar una respuesta amigable y útil sobre películas o series, basándote en la información que te proporciono.
-
-**Pregunta del usuario:**
-{user_query}
+Tu única tarea es generar una respuesta estructurada para CADA película o serie en la lista `media_data`.
 
 **Datos Verificados (Fuente de verdad obligatoria):**
 {media_data}
 
-### Reglas de Respuesta
-1.  **Saludo Amistoso:** Comienza siempre con un saludo o comentario cercano.
-2.  **Manejo de Datos:**
-    - Si `media_data` está vacío, **DEBES** generar tus propias recomendaciones basándote en la `Pregunta del usuario`. Para cada recomendación, crea una descripción amigable y **OBLIGATORIAMENTE** busca y proporciona la información detallada (Tráiler, Poster, Dónde ver, Reparto) usando el formato requerido. **NO** respondas simplemente que no encontraste resultados; en su lugar, actúa como un recomendador proactivo.
-    - Si `media_data` tiene información, para CADA película o serie, sigue esta estructura:
-        a.  **Título en Negrita:** `**Nombre de la Película/Serie**`.
-        b.  **Descripción Natural:** Escribe un párrafo amigable con una sinopsis o comentario.
-        c.  **Datos Estructurados (OBLIGATORIO):** Inmediatamente después de la descripción, incluye los siguientes datos. **ES CRÍTICO QUE INCLUYAS EL TRÁILER Y EL POSTER SIEMPRE QUE ESTÉN DISPONIBLES EN `media_data`. NO LOS OMITAS NUNCA.**
-            - `Tráiler: [URL del tráiler]`
-            - `Poster: [URL del poster]`
-            - `¿Dónde ver?: [lista de plataformas]`
-            - `Reparto: [lista de actores]` (los 5 principales)
-        d.  **Datos Curiosos (Opcional):** Si tienes algún dato curioso, añádelo después de los datos estructurados.
-3.  **Formato General:**
-    - Usa Markdown estándar para el texto (`**negrita**`, `*cursiva*`).
-    - **NO** uses encabezados (`###`).
-    - **NO** uses separadores como `---`.
-    - **NO** generes HTML.
-    - Separa la información de cada película/serie con dos saltos de línea para mayor claridad.
-
-### Ejemplo de Salida Esperada (con datos de TMDB):
-¡Qué buena onda que te interese esto! Aquí te va una recomendación que te va a encantar:
-
-**Mr. Robot**
-¡Uff, esta serie es una joya! Te sumerge en el mundo del hacking y la ciberseguridad de una forma súper realista y con un thriller psicológico que te va a volar la cabeza. Sigue a Elliot, un programador brillante pero con problemas sociales, que se une a un grupo de hacktivistas para cambiar el mundo.
-
-Tráiler: https://www.youtube.com/watch?v=N6HGuJC--rk
-Poster: https://image.tmdb.org/t/p/w500/kv1nRqgebSsREnd7vdC2pSGjpLo.jpg
-¿Dónde ver?: Amazon Prime Video, Google Play Movies, Apple TV
-Reparto: Rami Malek, Christian Slater, Carly Chaikin, Portia Doubleday, Martin Wallström
-
-¿Te animas a verla? ¡No te vas a arrepentir!
-
+### Reglas de Formato Estricto
+1.  **NO** incluyas saludos, despedidas o cualquier texto conversacional.
+2.  Para CADA película o serie en `media_data`, sigue esta estructura EXACTA:
+    a.  **Título en Negrita:** `**Nombre de la Película/Serie**`.
+    b.  **Descripción:** Escribe un párrafo de 2-3 frases con una sinopsis o comentario.
+    c.  **Datos Estructurados:** Inmediatamente después de la descripción, incluye los siguientes datos. **DEBES incluir el Tráiler y el Poster si existen en `media_data`.**
+        - `Tráiler: [URL del tráiler]`
+        - `Poster: [URL del poster]`
+        - `Dónde ver: [lista de plataformas de streaming, alquiler y compra]`
+        - `Reparto: [lista de los 5 actores principales]`
+3.  Separa la información de cada película/serie con dos saltos de línea.
 """
 
 SALUDOS = ["/start", "hola", "buenas", "hey", "¿estás ahí", "estas ahi", "¿estas ahí"]
