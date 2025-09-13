@@ -162,8 +162,8 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
     response_parts.append('')
 
     for media_item in formatted_media_data:
-        title = escape_markdown_v2(media_item.get("title", "Título desconocido"))
-        year = escape_markdown_v2(str(media_item.get("year", "")))
+        raw_title = media_item.get("title", "Título desconocido")
+        raw_year = str(media_item.get("year", ""))
         overview = escape_markdown_v2(media_item.get("overview", "Sin descripción disponible."))
         
         tmdb_url = media_item.get("tmdb_url", "No disponible")
@@ -173,7 +173,13 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         watch_providers = media_item.get("watch_providers")
         cast = media_item.get("cast")
 
-        response_parts.append(f"**{title} ({year})**")
+        escaped_title = escape_markdown_v2(raw_title)
+        
+        title_to_display = f"**{escaped_title}**"
+        if raw_year and raw_year not in raw_title:
+            title_to_display = f"**{escaped_title} ({escape_markdown_v2(raw_year)})**"
+
+        response_parts.append(title_to_display)
         response_parts.append(overview)
 
         if poster_url and poster_url != "No disponible":
