@@ -177,7 +177,7 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         
         title_to_display = f"**{escaped_title}**"
         if raw_year and raw_year not in raw_title:
-            title_to_display = f"**{escaped_title} \\({escape_markdown_v2(raw_year)}\\)" # Corrected escaping for parentheses
+            title_to_display = f"**{escaped_title} \\({escape_markdown_v2(raw_year)}\\)"
 
         response_parts.append(title_to_display)
         response_parts.append(overview)
