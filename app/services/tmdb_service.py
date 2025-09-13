@@ -111,11 +111,11 @@ def search_media_data(media_type: str, title: str, year: str, actor: str = None,
             if videos_res:
                 videos = videos_res.get('results', [])
                 if videos:
-                    preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()]
+                    preferred_videos = [v for v in videos if v['site'] == 'YouTube' and v.get('type') in ['Trailer', 'Teaser']]
+                    if not preferred_videos:
+                        preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'official trailer' in v.get('name', '').lower()]
                     if not preferred_videos:
                         preferred_videos = [v for v in videos if v['site'] == 'YouTube' and 'tráiler oficial' in v.get('name', '').lower()]
-                    if not preferred_videos:
-                        preferred_videos = [v for v in videos if v['site'] == 'YouTube' and v.get('type') in ['Trailer', 'Teaser']]
                     if not preferred_videos:
                         preferred_videos = [v for v in videos if v['site'] == 'YouTube']
                     if preferred_videos:
