@@ -1,7 +1,9 @@
 import httpx
+import logging
 from app.core.config import get_settings
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 async def send_typing_action(chat_id: int) -> None:
     async with httpx.AsyncClient(timeout=10) as client:
@@ -20,4 +22,10 @@ async def send_message(chat_id: int, text: str, parse_mode: str | None = None) -
         json_payload["parse_mode"] = parse_mode
 
     async with httpx.AsyncClient(timeout=10) as client:
-        await client.post(f"{settings.api_telegram}/sendMessage", json=json_payload)
+        try:
+            res = await client.post(f"{settings.api_telegram}/sendMessage", json=json_payload)
+            res.raise_for_status()
+            logger.info(f"Telegram API response: {res.json()}")
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Error sending message to Telegram: {e.response.text}", exc_info=True)
+            raise

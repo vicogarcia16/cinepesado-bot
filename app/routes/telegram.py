@@ -4,7 +4,7 @@ from app.core.exceptions import JsonInvalidException
 from app.bot.telegram import send_typing_action, send_message
 from app.core.utils import validate_message, is_saludo
 from app.data.prompt import SALUDO_INICIAL
-from app.db.chat_history import create_chat_history, get_last_chats, build_chat_context
+from app.db.chat_history import create_chat_history, get_last_chats
 from app.schemas.chat_history import ChatHistoryCreate, ChatHistoryListResponse
 from app.db.database import AsyncSessionLocal
 import asyncio
@@ -21,8 +21,6 @@ router = APIRouter(prefix="/telegram",
 
 async def process_message_task(chat_id: int, text: str):
     async with AsyncSessionLocal() as db:
-        full_text = await build_chat_context(db, chat_id, text)
-        
         async def keep_typing():
             while True:
                 await send_typing_action(chat_id)
@@ -30,7 +28,7 @@ async def process_message_task(chat_id: int, text: str):
 
         typing_task = asyncio.create_task(keep_typing())
         try:
-            response = await get_llm_response(db, chat_id, full_text)
+            response = await get_llm_response(db, chat_id, text)
             await create_chat_history(db, 
                                       ChatHistoryCreate(
                                           chat_id=chat_id,
