@@ -176,12 +176,18 @@ async def get_llm_response(db, chat_id: int, user_message: str) -> str:
         response_parts.append(f"**{title} ({year})**")
         response_parts.append(overview)
 
-        if poster_url != "No disponible":
+        if poster_url and poster_url != "No disponible":
             response_parts.append(f"[Póster]({poster_url})")
-        if tmdb_url != "No disponible":
-            response_parts.append(f"TMDB: {escape_markdown_v2(tmdb_url)}")
-        if trailer_link != "No disponible":
+        
+        if tmdb_url and tmdb_url != "No disponible":
+            response_parts.append(f"TMDB: {tmdb_url}")
+        else:
+            response_parts.append("TMDB: No disponible")
+
+        if trailer_link and trailer_link != "No disponible":
             response_parts.append(f"[Tráiler]({trailer_link})")
+        else:
+            response_parts.append("Tráiler: No disponible")
         
         if watch_providers:
             providers_list = []
